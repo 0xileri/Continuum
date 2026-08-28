@@ -1,0 +1,20 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Generated artifacts — reproducible from a fixed seed via `python -m continuum.synth.generate`.
+data/raw/
+data/features/
+data/scores/
+data/models/
+data/explain/
+
+node_modules/
+dashboard/dist/
+dashboard/.vite/
+npm-debug.log*
+.DS_Store

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/Scripts/python.exe -m continuum.synth.generate)",
+      "Bash(.venv/Scripts/python.exe -m continuum.ingestion.build_features)",
+      "Bash(export CONTINUUM_LLM_MODEL=claude-opus-5 CONTINUUM_LLM_ESCALATION_MODEL=claude-opus-5 PYTHONIOENCODING=utf-8)",
+      "Bash(.venv/Scripts/python.exe -m continuum.scoring.llm_agent --borrower brw_01hxg3e6f4 --injection-test)"
+    ]
+  }
+}
