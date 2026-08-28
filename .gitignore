@@ -18,3 +18,20 @@ dashboard/dist/
 dashboard/.vite/
 npm-debug.log*
 .DS_Store
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/lib/
+contracts/broadcast/
+
+# 0G bridge
+og-bridge/node_modules/
+
+# Demo injections (scripts/demo_event.py --revert restores from here)
+data/raw/_demo_snapshot/
+data/disputes/
+
+# Deployment records and the §10 integration proof are COMMITTED deliberately — they are the
+# submission artifact. Only local overrides are ignored.
+deployments/*.local.json

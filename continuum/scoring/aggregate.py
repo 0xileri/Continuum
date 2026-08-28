@@ -36,14 +36,29 @@ from continuum.clock import iso, now, utc
 from continuum.ingestion import quality, store
 from continuum.ingestion.features import RawData, compute_features, source_freshness
 from continuum.schemas import (
+    Attestation,
     BorrowerFeatureRecord,
     LLMFlags,
     ScorePublicationPayload,
     TriggerReason,
 )
-from continuum.scoring import attestation, calibration, llm_agent
+from continuum.scoring import attestation, calibration, llm_agent, staleness
 from continuum.scoring.anomaly import AnomalyReport
-from continuum.scoring.structured import StructuredModel
+from continuum.scoring.quant import QuantScorer
+
+
+def load_scorer():
+    """The §5.1 scorer the engine runs, per ``config.SCORER``.
+
+    Wave 3 §3 puts a trained model out of scope, so the default is the weighted quant formula. The
+    LightGBM path stays reachable — it is working code and Phase 2 material — but it is imported
+    lazily so that a Wave 3 run never pays for LightGBM, and a machine without it still scores.
+    """
+    if config.SCORER == "structured":
+        from continuum.scoring.structured import StructuredModel
+
+        return StructuredModel.load()
+    return QuantScorer.load()
 
 
 @dataclass
@@ -103,8 +118,9 @@ def build_feature_record(
     freshness = source_freshness(raw.feed_events, as_of)
     dq, dq_detail = quality.data_quality_score(freshness, as_of)
 
+    compute_attestation = None
     if llm_flags is None:
-        llm_flags = llm_agent.agent().assess(
+        llm_flags, compute_attestation = assess_documents(
             borrower.get("name", borrower["borrower_id"]),
             borrower.get("sector", ""),
             as_of,
@@ -119,9 +135,34 @@ def build_feature_record(
         llm_flags=llm_flags,
         data_quality_score=dq,
         feed_freshness_detail=dq_detail,
+        compute_attestation=compute_attestation,
         borrower_name=borrower.get("name", ""),
         sector=borrower.get("sector", ""),
     )
+
+
+def assess_documents(
+    borrower_name: str, sector: str, as_of: datetime, documents: list[dict]
+) -> tuple[LLMFlags, "Attestation | None"]:
+    """Route §5.1's reasoning call to the backend ``config.LLM_BACKEND`` names.
+
+    Returns ``(flags, attestation)``. Only the 0G Compute path produces an attestation; the direct
+    Anthropic path returns ``None``, and the payload then carries ``type="none"`` rather than an
+    attestation-shaped object with nothing behind it.
+
+    ``og.compute`` is imported lazily so that a run configured for the direct API never loads the
+    bridge, and a machine with no Node installed can still score.
+    """
+    if config.LLM_BACKEND == "0g-compute":
+        from continuum.og import compute as og_compute
+
+        result = og_compute.reason_over_documents(borrower_name, sector, as_of, documents)
+        return result.flags, (result.attestation if result.attestation.type == "0g-compute" else None)
+
+    if config.LLM_BACKEND == "offline":
+        return llm_agent.offline_flags("CONTINUUM_LLM_BACKEND=offline"), None
+
+    return llm_agent.agent().assess(borrower_name, sector, as_of, documents), None
 
 
 # --------------------------------------------------------------------------------------
@@ -190,7 +231,11 @@ def publish_decision(
     )
 
 
-def _trigger_detail(record: BorrowerFeatureRecord, report: AnomalyReport) -> str:
+def _trigger_detail(
+    record: BorrowerFeatureRecord,
+    report: AnomalyReport,
+    stale: "staleness.StalenessAssessment | None" = None,
+) -> str:
     """Human-readable one-liner for §7's "trigger reason" requirement.
 
     §7: "Publish a 'last updated' and 'trigger reason' alongside every score — this is your entire
@@ -202,6 +247,8 @@ def _trigger_detail(record: BorrowerFeatureRecord, report: AnomalyReport) -> str
     level, degraded = quality.staleness_summary(record.feed_freshness_detail)
     if level != "fresh":
         parts.append(f"data {level} ({', '.join(degraded)})")
+    if stale is not None and stale.silent:
+        parts.append(stale.summary())
 
     raised = [f for f in config.LLM_FLAG_PENALTIES if getattr(record.llm_flags, f, False)]
     if raised:
@@ -232,13 +279,14 @@ def _explain_ref(borrower_id: str, published_at: datetime, measurement_hash: str
 def score(
     record: BorrowerFeatureRecord,
     *,
-    model: StructuredModel,
+    model,
     anomaly_report: AnomalyReport,
     trigger_reason: TriggerReason,
     prior: ScorePublicationPayload | None = None,
     last_published: ScorePublicationPayload | None = None,
     triggered_by_detail: str = "",
     published_at: datetime | None = None,
+    history: list[ScorePublicationPayload] | None = None,
 ) -> ScoreResult:
     """Combine the ensemble into one §9 payload plus its explanation artifact.
 
@@ -263,6 +311,21 @@ def score(
     penalty, flags_raised = calibration.llm_penalty(record.llm_flags)
     points_after_llm = points_from_model - penalty
 
+    # --- §4 staleness rule: silence is worsening information --------------------------------
+    #
+    # Applied here, before the interval-derived ceiling, for the same reason the LLM penalty is:
+    # a borrower who is both silent and deteriorating must pay for both. Applying the ceiling
+    # first would let the staleness penalty land harmlessly beneath it and price two independent
+    # problems as one.
+    stale = staleness.assess(
+        record.source_freshness,
+        record.as_of,
+        ratchet_ceiling=staleness.ratchet_ceiling_from_history(
+            history or [], record.source_freshness, record.as_of
+        ),
+    )
+    points_after_staleness, staleness_notes = staleness.apply(points_after_llm, stale)
+
     # --- parts 1-3 -> interval, then ceiling ------------------------------------------------
     terms = calibration.uncertainty_terms(
         data_quality=record.data_quality_score,
@@ -270,12 +333,13 @@ def score(
         fold_std=fold_std,
         anomaly_pressure=anomaly_report.pressure,
         llm_confidence=record.llm_flags.confidence,
+        model_variance_floor=float(model.cv_metrics.get("quant_model_variance", 0.0)),
     )
     hw = calibration.half_width(terms)
     ceiling = calibration.grade_ceiling(hw)
-    ceiling_binding = ceiling < points_after_llm
+    ceiling_binding = ceiling < points_after_staleness
 
-    final = max(0.0, min(1000.0, min(points_after_llm, ceiling)))
+    final = max(0.0, min(1000.0, min(points_after_staleness, ceiling)))
     grade = calibration.points_to_grade(final)
     score_numeric = int(round(final))
     ci = (
@@ -283,12 +347,19 @@ def score(
         int(round(min(1000.0, final + hw))),
     )
 
-    # --- §8/§13: bind the score to its inputs and its model --------------------------------
+    # --- §2/§6: the 0G Compute attestation, plus the local input binding --------------------
     att = attestation.build(
         record,
-        model_artifact_sha256=model.artifact_sha256,
+        scorer_sha256=model.artifact_sha256,
         model_version=model.model_version,
+        scorer_kind=getattr(model, "scorer_kind", "structured_lightgbm"),
     )
+    if config.OG_REQUIRE_ATTESTATION and att.type != "0g-compute":
+        raise RuntimeError(
+            f"CONTINUUM_OG_REQUIRE_ATTESTATION is set but {record.borrower_id}'s score has no "
+            f"verified 0G Compute attestation ({att.provider}). Refusing to publish an "
+            f"unattested score into a run whose output is Integration Proof."
+        )
     explain_ref = _explain_ref(record.borrower_id, published_at, att.measurement_hash)
 
     publish_now, publish_reason = publish_decision(
@@ -317,7 +388,10 @@ def score(
         as_of=record.as_of,
         llm_flags=record.llm_flags,
         anomaly_pressure=round(anomaly_report.pressure, 4),
-        triggered_by_detail=triggered_by_detail or _trigger_detail(record, anomaly_report),
+        staleness_silent=stale.silent,
+        staleness_penalty_points=round(stale.penalty_points, 2),
+        triggered_by_detail=triggered_by_detail
+        or _trigger_detail(record, anomaly_report, stale),
         published_onchain=publish_now,
     )
 
@@ -332,12 +406,15 @@ def score(
         "model_artifact_sha256": model.artifact_sha256,
         "trigger_reason": trigger_reason,
         # The arithmetic, in the order it happened, so a dispute can be checked by hand.
+        "scorer": getattr(model, "scorer_kind", "structured_lightgbm"),
         "score_build_up": {
             "pd": round(pd_hat, 6),
             "base_rate": round(model.base_rate, 6),
             "points_from_model": round(points_from_model, 2),
             "llm_penalty": round(-penalty, 2),
             "points_after_llm": round(points_after_llm, 2),
+            "staleness_penalty": round(-stale.penalty_points, 2),
+            "points_after_staleness": round(points_after_staleness, 2),
             "grade_ceiling": round(ceiling, 2),
             "ceiling_binding": ceiling_binding,
             "score_numeric": score_numeric,
@@ -345,7 +422,11 @@ def score(
             "confidence_interval": list(ci),
             "grade_band": list(calibration.grade_band(grade)),
         },
-        # §7 part 1 explainability. Log-odds space, per StructuredModel.attribute.
+        # §4's rule, with its attribution, so a borrower can see which feed cost them what.
+        "staleness": {**stale.as_dict(), "notes": staleness_notes},
+        # Feature attribution. Units differ by scorer — log-odds for the trained booster's
+        # TreeSHAP, composite-health-index units for §5.1's weighted formula — and the header row
+        # carries a "_units" key so the dashboard never mislabels one as the other.
         "feature_attribution": model.attribute(features),
         "features": features.model_dump(),
         # Why the interval is this wide, term by term — see uncertainty_terms' docstring.
@@ -405,14 +486,18 @@ def score(
                 else None
             ),
         },
-        "attestation": att.model_dump(),
+        "attestation": att.model_dump(mode="json"),
+        "attestation_summary": attestation.describe(att),
         "input_digest": attestation.input_digest(record),
-        # §8/§13, restated where an auditor will actually be looking.
+        # §11, restated where an auditor will actually be looking rather than only in a README.
         "trust_disclaimer": (
-            "Phase 0: computed by a single operator off-chain with no enclave and no proof. The "
-            "measurement_hash is tamper evidence binding this score to one model artifact and one "
-            "input record — not an attestation that the computation was honest, and not evidence "
-            "that the underlying invoice or bank data was real."
+            "Wave 3 is a single-operator system. The 0G Compute attestation covers the document "
+            "reasoning call only: a TEE-held key signed that response and the broker verified the "
+            "signature. The aggregation arithmetic ran off-chain on the operator's machine — the "
+            "§5.2 fallback, taken because 0G Compute serves inference against registered providers "
+            "and does not execute arbitrary jobs. measurement_hash binds this score to one feature "
+            "record and one scoring rule; it is tamper evidence, not a proof of honest execution, "
+            "and nothing here is evidence that the underlying invoice data was real."
         ),
     }
 
@@ -427,13 +512,80 @@ def publish(result: ScoreResult) -> ScorePublicationPayload:
     harmless, rather than a published score whose ``explainability_ref`` points at nothing — which
     under §11 is a downgrade a borrower cannot contest.
 
-    Note that every re-score is appended, whether or not it cleared §10's gate. ``published_onchain``
-    records that decision; dropping the row would erase the evidence that a threshold was applied.
+    Note that every re-score is appended, whether or not it cleared the publish gate.
+    ``published_onchain`` records that decision; dropping the row would erase the evidence that a
+    threshold was applied.
+
+    When ``config.OG_PUBLISH_ON_SCORE`` is set the 0G writes happen here too, in the order §5.3
+    and §5.4 imply and no other: **local, then 0G Storage, then the chain.** The registry stores a
+    storage root hash, so publishing on-chain before the record is actually stored would put a
+    dangling reference in a permanent, public place. A storage write that succeeds while the chain
+    write fails leaves an orphaned record, which costs a few kilobytes and nothing else.
     """
     store.save_explanation(result.payload.explainability_ref, result.explanation)
     store.save_feature_record(result.record)
+
+    if config.OG_PUBLISH_ON_SCORE:
+        publish_to_0g(result)
+
     store.append_score(result.payload)
     return result.payload
+
+
+def publish_to_0g(result: ScoreResult) -> ScoreResult:
+    """Write the feature record to 0G Storage and, if the gate allowed it, the score to the chain.
+
+    Mutates ``result.payload`` in place so the persisted row carries the refs. Failures are
+    recorded rather than raised: a 0G outage must not lose a score, and a payload whose
+    ``storage_ref.provider`` is still ``"local"`` is self-describing — it says the record exists
+    only on this machine, which is exactly what happened.
+
+    The chain write is attempted only for scores that cleared the off-chain publish gate. The
+    registry enforces §4's cooldown independently (§7), so the two gates can disagree; when they do,
+    the on-chain answer wins and is recorded in the explanation. That is the correct precedence —
+    the contract is the thing a consuming pool reads.
+    """
+    from continuum.og import chain as og_chain
+    from continuum.og import storage as og_storage
+
+    payload = result.payload
+    og_log: dict = {}
+
+    storage = og_storage.put_feature_record(result.record)
+    payload.storage_ref = storage.ref
+    og_log["storage"] = {
+        "ok": storage.ok,
+        "summary": storage.summary(),
+        "root_hash": storage.ref.root_hash,
+        "uri": storage.ref.uri,
+        "explorer_url": storage.explorer_url or og_storage.explorer_url(storage.ref),
+        "error": storage.error,
+    }
+
+    if payload.published_onchain:
+        published = og_chain.publish_score(payload)
+        payload.chain_ref = published.ref
+        og_log["chain"] = {
+            "published": published.published,
+            "summary": published.summary(),
+            "rejected_by": published.rejected_by,
+            "seconds_remaining": published.seconds_remaining,
+            "error": published.error,
+            "tx_hash": published.ref.tx_hash if published.ref else "",
+            "explorer_url": published.ref.explorer_url if published.ref else "",
+        }
+        if not published.published:
+            # The off-chain gate said publish and the registry disagreed. Record the truth: this
+            # score is not on-chain, whatever the local decision was.
+            payload.published_onchain = False
+    else:
+        og_log["chain"] = {
+            "published": False,
+            "summary": "not attempted — held by the off-chain publish gate",
+        }
+
+    result.explanation["og"] = og_log
+    return result
 
 
 # --------------------------------------------------------------------------------------

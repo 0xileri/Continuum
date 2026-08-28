@@ -75,6 +75,7 @@ def uncertainty_terms(
     fold_std: float,
     anomaly_pressure: float,
     llm_confidence: float,
+    model_variance_floor: float = 0.0,
 ) -> dict[str, float]:
     """The four §-cited uncertainty inputs, each normalised to 0-1.
 
@@ -82,18 +83,26 @@ def uncertainty_terms(
     "the interval is wide" is not an explanation. A borrower disputing their premium under §11 is
     entitled to know whether it was their own data going stale, an anomaly, a thin document file, or
     the model being out of its depth.
+
+    ``model_variance_floor`` is the scorer's own irreducible uncertainty, added because Wave 3's
+    §5.1 scorer has no folds to be unstable across. An unfitted weighted formula is not *certain*
+    just because it cannot disagree with itself — the floor is where that shows up, and it is why
+    every Wave 3 interval is visibly wider than a calibrated model's would be. See
+    ``config.QUANT_MODEL_VARIANCE``.
     """
     return {
         # §6: a feed going quiet must cost confidence, not be silently absorbed.
         "data_quality": max(0.0, min(1.0, 1.0 - data_quality)),
-        # §17's cold-start problem, quantified per prediction: how far outside its training
-        # distribution this borrower sits, plus how unstable the model was across held-out folds.
+        # The cold-start problem, quantified per prediction: how far outside its expected operating
+        # range this borrower sits, plus how unstable the scorer is — measured across held-out folds
+        # for a fitted model, or asserted as a floor for one that was never fitted.
         "model_variance": max(
             0.0,
             min(
                 1.0,
                 config.CI_NOVELTY_WEIGHT * novelty_share
-                + fold_std / config.CI_MODEL_FOLD_STD_REF,
+                + fold_std / config.CI_MODEL_FOLD_STD_REF
+                + model_variance_floor,
             ),
         ),
         # §7 part 3: a borrower behaving unusually may be fine, but the evidence that the score is

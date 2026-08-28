@@ -31,8 +31,84 @@ for _d in (RAW_DIR, FEATURES_DIR, SCORES_DIR, MODELS_DIR, EXPLAIN_DIR, DISPUTES_
 # Versioning — stamped into every Score Publication Payload (§9)
 # --------------------------------------------------------------------------------------
 
-MODEL_VERSION = "scoring-engine-v0.1.0"
-"""Phase 0. §9's example shows v1.3.2; this PoC is honestly pre-1.0."""
+MODEL_VERSION = "continuum-scoring-v0.1.0-wave3"
+"""Stamped verbatim from the Wave 3 brief's §6 payload example."""
+
+SCORER = os.getenv("CONTINUUM_SCORER", "quant")
+"""Which §5.1 scorer the engine runs. ``quant`` is the Wave 3 path.
+
+Wave 3 §3 puts a trained XGBoost/LightGBM model explicitly out of scope — "no real default data
+exists yet to train or backtest against" — and §5.1 replaces it with the transparent weighted
+formula in ``scoring/quant.py``. The LightGBM implementation from the earlier off-chain phase is
+still in the tree (``scoring/structured.py``, ``scoring/train.py``) because deleting working code
+to satisfy a scope boundary is destructive rather than disciplined, but it is **off the Wave 3
+path** and reachable only by setting this to ``structured``. See WAVE3.md."""
+
+# --------------------------------------------------------------------------------------
+# 0G network — verified against docs.0g.ai, August 2026
+# --------------------------------------------------------------------------------------
+
+OG_NETWORK = os.getenv("CONTINUUM_OG_NETWORK", "testnet")
+"""``testnet`` | ``mainnet``. Defaults to testnet deliberately.
+
+§9 Day 3 sequences testnet-first for "fast, free-gas iteration" and §12 asks for explicit time
+budgeted for the promotion. A default of ``mainnet`` would make every careless local run spend real
+0G, so the promotion is an opt-in environment change rather than the path of least resistance."""
+
+OG_NETWORKS: dict[str, dict[str, object]] = {
+    "mainnet": {
+        "name": "0g-chain-mainnet",
+        "chain_id": 16661,
+        "rpc_url": "https://evmrpc.0g.ai",
+        "explorer": "https://chainscan.0g.ai",
+        "storage_indexer": "https://indexer-storage-turbo.0g.ai",
+        "storage_explorer": "https://storagescan.0g.ai",
+        "flow_contract": "0x62D4144dB0F0a6fBBaeb6296c785C71B3D57C526",
+        "faucet": None,
+    },
+    "testnet": {
+        "name": "0g-galileo-testnet",
+        "chain_id": 16602,
+        "rpc_url": "https://evmrpc-testnet.0g.ai",
+        "explorer": "https://chainscan-galileo.0g.ai",
+        "storage_indexer": "https://indexer-storage-testnet-turbo.0g.ai",
+        "storage_explorer": "https://storagescan-galileo.0g.ai",
+        "flow_contract": "0x22E03a6A89B950F1c82ec5e74F8eCa321a105296",
+        "faucet": "https://faucet.0g.ai",
+    },
+}
+
+
+def og() -> dict:
+    """Active 0G network profile. Overridable per-field by environment."""
+    profile = dict(OG_NETWORKS[OG_NETWORK])
+    if rpc := os.getenv("CONTINUUM_OG_RPC_URL"):
+        profile["rpc_url"] = rpc
+    if indexer := os.getenv("CONTINUUM_OG_STORAGE_INDEXER"):
+        profile["storage_indexer"] = indexer
+    return profile
+
+
+OG_REGISTRY_ADDRESS = os.getenv("CONTINUUM_REGISTRY_ADDRESS", "")
+"""Deployed ``ContinuumScoreRegistry`` address on the active network. Written by the deploy script
+into ``deployments/<network>.json``; this env var overrides it."""
+
+OG_COMPUTE_PROVIDER = os.getenv("CONTINUUM_OG_COMPUTE_PROVIDER", "")
+"""Provider address on the 0G Compute inference marketplace. Empty means "pick the first service
+``listService`` returns", which is fine for a demo and wrong for anything reproducible — the
+provider identity is part of what the attestation attests to."""
+
+OG_BRIDGE_TIMEOUT_S = int(os.getenv("CONTINUUM_OG_BRIDGE_TIMEOUT", "180"))
+"""Per-call ceiling on the Node bridge. 0G Storage uploads and Compute settlement both wait on
+chain confirmations, so this is minutes rather than seconds."""
+
+OG_REQUIRE_ATTESTATION = os.getenv("CONTINUUM_OG_REQUIRE_ATTESTATION", "") == "1"
+"""Refuse to publish a score whose 0G Compute attestation did not verify.
+
+Off by default so a demo still runs when the marketplace is unreachable — the payload then carries
+``type="none"`` and says why, which is the same honesty the earlier phase's stub had. Set this for
+any run whose output is going to be shown as Integration Proof: an unverified attestation rendered
+next to a verified one is precisely the overclaim §11 warns costs you the reader."""
 
 # --------------------------------------------------------------------------------------
 # Synthetic data generation (ASSUMPTIONS #10)
@@ -47,6 +123,28 @@ HISTORY_DAYS = 548  # ~18 months
 #
 # §14: "Sonnet-class for volume, escalate to a stronger model for edge cases/disputes."
 # --------------------------------------------------------------------------------------
+
+LLM_BACKEND = os.getenv("CONTINUUM_LLM_BACKEND", "0g-compute")
+"""Where §5.1's reasoning call runs: ``0g-compute`` | ``anthropic`` | ``offline``.
+
+``0g-compute`` is the Wave 3 path and the default, because it is the only one that returns an
+attestation — §2 is the reason this project is on 0G, and a default that quietly skipped the
+verifiable path would make the integration a thing you have to remember to turn on.
+
+``anthropic`` calls the Claude API directly: same prompt, same schema, no attestation. Useful for
+iterating on prompt wording without spending 0G, and it is what the pre-0G phase used.
+
+``offline`` raises no flags at zero confidence. Not an approximation of the agent — see
+``llm_agent.offline_flags``."""
+
+OG_PUBLISH_ON_SCORE = os.getenv("CONTINUUM_OG_PUBLISH", "") == "1"
+"""Whether ``aggregate.publish`` also writes to 0G Storage and the on-chain registry.
+
+**Off by default, deliberately.** These two steps spend gas on every score, and a backfill of a
+twelve-borrower cohort across twelve weekly checkpoints is 144 re-scores. Having that happen because
+someone ran the ordinary daily command would be a bad surprise on testnet and an expensive one on
+mainnet. The 0G writes are opted into per run — see ``scripts/publish_wave3.py``, which is the
+intended entry point and reports what each score cost before it commits to the next."""
 
 LLM_MODEL = os.getenv("CONTINUUM_LLM_MODEL", "claude-sonnet-5")
 LLM_ESCALATION_MODEL = os.getenv("CONTINUUM_LLM_ESCALATION_MODEL", "claude-opus-5")
@@ -207,6 +305,126 @@ CI_NOVELTY_WEIGHT = 2.0
 """Multiplier on the share of features outside their training range. At 2.0, half the features
 being out-of-range saturates the term — the model is being asked about a borrower unlike anything
 it was fitted on."""
+
+# --------------------------------------------------------------------------------------
+# §5.1 weighted quant score — the Wave 3 scorer
+#
+# "a transparent weighted formula over revenue_trend_90d, days_sales_outstanding,
+#  payer_concentration_top1_pct, and on_time_repayment_rate_180d — not a trained model this
+#  wave. Keep it simple and explainable; this is a placeholder, say so in the docs."
+#
+# Four features, named by the brief. Weights sum to 1.0 and each feature is mapped onto [0,1]
+# by a stated pivot and span, so a reader can reconstruct any published score with a calculator.
+# --------------------------------------------------------------------------------------
+
+QUANT_WEIGHTS: dict[str, float] = {
+    "on_time_repayment_rate_180d": 0.35,
+    "days_sales_outstanding": 0.25,
+    "revenue_trend_90d": 0.22,
+    "payer_concentration_top1_pct": 0.18,
+}
+"""Ordering reflects how directly each feature bears on getting paid back. Repayment behaviour is
+the borrower's own track record on this facility and leads. DSO is the receivable actually turning
+into cash. Revenue trend is direction of travel. Concentration is a fragility multiplier rather
+than a present fact, so it is smallest — a 60%-concentrated borrower with a healthy payer is not
+in trouble today, which is why §5.3's payer-side signal belongs in the LLM layer rather than here.
+
+**These weights are not fitted.** Nothing in Wave 3 has the default outcomes needed to fit them
+(§3), and a formula whose coefficients were tuned until the synthetic cohort ranked nicely would be
+a trained model with extra steps and no held-out set. They are a stated prior, published so they
+can be argued with."""
+
+QUANT_PIVOTS: dict[str, tuple[float, float, str]] = {
+    # feature: (pivot, span, direction) — normalised = clamp(0.5 + dir * (value - pivot) / span)
+    "on_time_repayment_rate_180d": (0.90, 0.20, "higher_is_better"),
+    "days_sales_outstanding": (45.0, 40.0, "lower_is_better"),
+    "revenue_trend_90d": (0.00, 0.40, "higher_is_better"),
+    "payer_concentration_top1_pct": (0.40, 0.40, "lower_is_better"),
+}
+"""Pivot = the value that scores 0.5; span = the distance that moves the sub-score a full point.
+
+Piecewise-linear rather than logistic on purpose: §5.1 asks for something simple and explainable,
+and a lender can check a linear interpolation by hand. The pivots are ordinary invoice-financing
+operating values — 90% on-time, 45-day DSO, flat revenue, 40% top-payer concentration — not
+percentiles of the synthetic cohort, which would make the scale move whenever the generator did."""
+
+QUANT_PD_FLOOR, QUANT_PD_CEILING = 0.01, 0.55
+"""The composite [0,1] health index is mapped onto a pseudo-PD in this range before entering the
+same ``pd_to_points`` scorecard the earlier phase used, so the letter grades keep one definition
+across both scorers. The range is narrow and deliberately unambitious: an unfitted weighted formula
+cannot justify claiming a borrower's deterioration probability is 0.1% or 90%."""
+
+QUANT_MODEL_VARIANCE = 0.45
+"""Fixed contribution to the confidence interval's ``model_variance`` term, standing in for the
+cross-validated fold spread a trained model supplies.
+
+High, and meant to be. §3 says this formula is a placeholder for a model that has never been fitted
+or backtested, and the interval is where that shows up honestly: every Wave 3 score carries a
+visibly wider band than a calibrated model would produce, because the scorer is a stated prior
+rather than an estimate. Replacing this constant with a real fold spread is a Phase 2 deliverable."""
+
+QUANT_PLAUSIBLE_RANGES: dict[str, tuple[float, float]] = {
+    "on_time_repayment_rate_180d": (0.0, 1.0),
+    "days_sales_outstanding": (10.0, 120.0),
+    "revenue_trend_90d": (-0.60, 0.60),
+    "payer_concentration_top1_pct": (0.15, 0.95),
+}
+"""Operating ranges the formula is meant to be read inside. A borrower outside them is not
+necessarily wrong — it is outside what the pivots were chosen for, so it widens the interval the
+way ``novelty_share`` does for the trained model."""
+
+# --------------------------------------------------------------------------------------
+# §4 staleness rule — "silence is treated as worsening information, not neutral information"
+#
+#   "when a data source goes silent, the score keeps degrading under continued silence rather
+#    than plateauing or reversing upward."
+#
+# This is a stronger requirement than a decaying data-quality weight, and the two failure modes
+# it names are both live hazards in a decay-only design:
+#
+#   PLATEAU  — exponential freshness decay asymptotes to zero, the interval hits CI_MAX_HALF_WIDTH,
+#              and the grade ceiling stops falling. A borrower dark for a year sits at the same
+#              letter as one dark for a month.
+#   REVERSAL — some features improve mechanically as time passes with no new data.
+#              ``days_since_last_late_payment`` is the clear one: it counts up from the last known
+#              late payment, so silence makes the borrower look steadily better behaved.
+#
+# ``scoring/staleness.py`` implements the rule; these are its constants.
+# --------------------------------------------------------------------------------------
+
+STALENESS_GRACE_HOURS = 48.0
+"""Floor on the per-feed grace period. Silence shorter than a feed's grace is ordinary reporting
+jitter and costs nothing beyond the freshness decay already in ``data_quality_score``.
+
+**A floor, not a flat value.** Each feed's real grace is ``max(FEED_SLA[feed]["grace_hours"],
+this)``, because "silent" has to mean *past its own expected reporting interval*. A flat 48h reads
+the document feed — which syncs every 30 days by design — as permanently silent, which makes every
+borrower permanently stale, which makes §4's ratchet unable to find a fully-fresh observation to
+anchor to and therefore never engage. That was a real bug, caught by the ``feed_goes_dark``
+borrower's score climbing 24 points while two of its feeds were dark."""
+
+STALENESS_POINTS_PER_DAY = 3.2
+"""Score points removed per day of silence, per unit of feed weight, after the grace period.
+
+Unbounded by design — that is the whole of §4's "keeps degrading". At the full 1.0 feed weight a
+borrower loses roughly a grade band per fortnight of total silence and reaches D in about ten
+months. Calibrated so that a month of silence costs about a notch and a quarter of silence is
+disqualifying, which is the rate at which a credit committee would actually lose patience with an
+originator that stopped reporting."""
+
+STALENESS_RATCHET = True
+"""While a borrower is inside a silence regime, the published numeric score may not rise.
+
+The reversal half of §4's rule, enforced as a property of the published series rather than trusted
+to emerge from the features. Without it a dark borrower's score drifts upward on
+``days_since_last_late_payment`` alone — which is not new information, it is the absence of it.
+
+The ratchet releases the moment a silent feed reports again: recovery is allowed on evidence, never
+on the passage of time."""
+
+STALENESS_FEED_WEIGHTS_FROM_SLA = True
+"""Weight each feed's silence by its ``FEED_SLA`` weight rather than treating all feeds alike, so
+a dark invoice feed (0.35) costs seven times what a dark on-chain feed (0.05) does."""
 
 # --------------------------------------------------------------------------------------
 # Confidence interval (ASSUMPTIONS #6)

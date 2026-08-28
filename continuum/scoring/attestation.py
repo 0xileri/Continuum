@@ -1,23 +1,32 @@
-"""§9's ``attestation`` block, built honestly for Phase 0.
+"""§6's ``attestation`` block — filled by 0G Compute, per Wave 3 §2 and §4.
 
-§8 is blunt about why this layer exists: *"why should anyone trust that the score wasn't fabricated,
-or that the AI operator isn't front-running its own borrowers?"* Phase 0 does not answer that
-question. It runs on one operator's machine, with no enclave and no proof.
+§2 is the reason this project is on 0G at all:
 
-What this module produces is therefore a **tamper-evidence digest, not an attestation**: a hash
-binding a published score to the exact model artifact and the exact input record that produced it.
-That is genuinely useful — it makes silent retro-editing of a score or its inputs detectable — and it
-is genuinely not what §8 asks for. The ``type`` field says ``"none"`` and the provider string says
-``phase_0_offchain_no_attestation`` so no consumer can mistake one for the other.
+    *"why should anyone trust that an AI-computed credit score wasn't fabricated? The original plan
+    was to stand up TEE infrastructure (Automata/Phala/Marlin Oyster) or fall back to Chainlink
+    Functions... 0G Compute Network's verifiable inference is that layer, natively."*
 
-§13's oracle-operator warning is the reason this file is written this way rather than labelled
-``"tee"`` with a placeholder provider: *"be explicit about this in your own docs rather than
-overclaiming trustlessness you haven't earned yet — institutional counterparties will find the
-overclaim faster than retail will, and it costs you the deal."*
+and §4 says what that means for this file specifically:
 
-Phase 1 replaces ``measurement_hash`` with an enclave measurement and populates ``signature`` with
-the enclave's signature over the payload. The shape here is already the shape that needs, so the
-change is a new provider implementation rather than a schema migration.
+    *"the original Phase 0 POC stubbed this with an explicit placeholder type rather than omitting
+    it or faking TEE fields. That placeholder is now filled by the 0G Compute attestation object."*
+
+**Two different claims live in this block, and conflating them would be the overclaim §11 warns
+about.** They are kept as separate fields:
+
+``type`` / ``proof_ref`` / ``verified`` — the 0G Compute attestation. A TEE-held key signed the
+reasoning response, and ``broker.inference.processResponse`` checked that signature. This proves a
+genuine enclave, running the named model, produced the ``llm_flags`` that fed this score.
+
+``measurement_hash`` — a local sha256 binding (scorer identity + scorer artifact + input feature
+record). This proves the *published score* corresponds to that exact record under that exact
+scoring rule. 0G's signature does not cover it, because the arithmetic in ``aggregate.score`` runs
+here rather than in the enclave — that is the §5.2 scope reduction, and pretending otherwise by
+folding the digest into the attested surface is exactly the kind of quiet upgrade that does not
+survive scrutiny.
+
+Neither says the underlying invoice data was real. That remains a Layer 1 provenance problem, and
+§11 flags direct-API integration as the Phase 2 mitigation.
 """
 
 from __future__ import annotations
@@ -27,7 +36,8 @@ import json
 
 from continuum.schemas import Attestation, BorrowerFeatureRecord
 
-PROVIDER = "phase_0_offchain_no_attestation"
+NOT_ATTESTED = "not_attested"
+OG_PROVIDER = "0g-compute-network"
 
 
 def input_digest(record: BorrowerFeatureRecord) -> str:
@@ -36,40 +46,72 @@ def input_digest(record: BorrowerFeatureRecord) -> str:
     Canonical JSON — sorted keys, no whitespace — so the digest is a function of the *content*
     rather than of serialisation order. Without that, re-serialising the same record with a
     different key order produces a different hash and the audit trail becomes noise.
+
+    The record's own ``compute_attestation`` is excluded: it is a property of how the record's
+    flags were obtained, not part of the borrower's data, and including it would make the digest
+    depend on which Compute provider happened to answer. Two runs that read the same inputs must
+    produce the same input digest.
     """
     payload = json.loads(record.model_dump_json())
+    payload.pop("compute_attestation", None)
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def measurement(*, scorer_kind: str, scorer_sha256: str, model_version: str, digest: str) -> str:
+    """Bind scorer identity, scorer content, version and inputs into one digest.
+
+    All four are needed. The artifact hash alone does not pin which inputs were used; the input
+    hash alone does not pin which scorer read them; the kind distinguishes a weighted formula from
+    a booster that happened to hash the same way; and the version string is what a human reads in
+    the payload, so it must be inside the hash rather than beside it.
+    """
+    joined = "|".join(["continuum-wave3", scorer_kind, model_version, scorer_sha256, digest])
+    return "0x" + hashlib.sha256(joined.encode("utf-8")).hexdigest()
 
 
 def build(
     record: BorrowerFeatureRecord,
     *,
-    model_artifact_sha256: str,
+    scorer_sha256: str,
     model_version: str,
+    scorer_kind: str = "weighted_quant_v1",
+    compute: Attestation | None = None,
 ) -> Attestation:
-    """Bind (model artifact, model version, input record) into one verifiable digest.
+    """Assemble §6's attestation block for one published score.
 
-    All three are needed. The artifact hash alone does not pin which inputs were used; the input
-    hash alone does not pin which model read them; and the version string is what a human reads in
-    the payload, so it must be inside the hash rather than beside it.
+    ``compute`` is whatever ``og.compute`` captured from the 0G Compute call that produced this
+    record's ``llm_flags`` — passed through verbatim per §5.2 ("store it verbatim in the attestation
+    block") rather than reshaped. When it is absent or unverified the block stays ``type="none"``
+    and says so in the provider field, which is the same honesty the pre-0G stub had.
     """
-    measurement = hashlib.sha256(
-        "|".join(
-            [
-                "continuum-phase0",
-                model_version,
-                model_artifact_sha256,
-                input_digest(record),
-            ]
-        ).encode("utf-8")
-    ).hexdigest()
+    digest = input_digest(record)
+    measurement_hash = measurement(
+        scorer_kind=scorer_kind,
+        scorer_sha256=scorer_sha256,
+        model_version=model_version,
+        digest=digest,
+    )
+
+    source = compute or record.compute_attestation
+    if source is None or source.type != "0g-compute":
+        return Attestation(
+            type="none",
+            provider=NOT_ATTESTED,
+            measurement_hash=measurement_hash,
+            signature=None,
+        )
 
     return Attestation(
-        type="none",
-        provider=PROVIDER,
-        measurement_hash=f"0x{measurement}",
-        signature=None,
+        type="0g-compute",
+        provider=OG_PROVIDER,
+        job_id=source.job_id,
+        proof_ref=source.proof_ref,
+        compute_node=source.compute_node,
+        verified=source.verified,
+        model=source.model,
+        measurement_hash=measurement_hash,
+        signature=source.signature,
     )
 
 
@@ -77,17 +119,34 @@ def verify(
     attestation: Attestation,
     record: BorrowerFeatureRecord,
     *,
-    model_artifact_sha256: str,
+    scorer_sha256: str,
     model_version: str,
+    scorer_kind: str = "weighted_quant_v1",
 ) -> bool:
-    """Recompute the digest and compare. This is the whole of what Phase 0 can check.
+    """Recompute the local measurement and compare.
 
-    A ``True`` here means: the record on file is byte-for-byte the record that was scored, by the
-    model artifact named. It does **not** mean the score was computed honestly, that the model was
-    the one advertised at the time, or that the underlying invoice data was real — §8's point that
-    a proof about model execution says nothing about input integrity applies with full force.
+    This checks the half that is ours: the record on file is byte-for-byte the record that was
+    scored, under the scorer named. It deliberately does **not** re-verify the 0G signature — that
+    check belongs to the broker, needs the network, and its result is already recorded in
+    ``attestation.verified``. A function that silently returned ``True`` for an unverified 0G
+    attestation because the local digest matched would be answering a different question than the
+    one its name asks.
     """
-    expected = build(
-        record, model_artifact_sha256=model_artifact_sha256, model_version=model_version
+    expected = measurement(
+        scorer_kind=scorer_kind,
+        scorer_sha256=scorer_sha256,
+        model_version=model_version,
+        digest=input_digest(record),
     )
-    return expected.measurement_hash == attestation.measurement_hash
+    return expected == attestation.measurement_hash
+
+
+def describe(attestation: Attestation) -> str:
+    """One line for a CLI or a dashboard badge. Never rounds an unverified answer up."""
+    if attestation.type != "0g-compute":
+        return "no attestation — score computed locally, unverified (§5.2 fallback)"
+    state = "verified" if attestation.verified else "RETURNED BUT NOT VERIFIED"
+    return (
+        f"0G Compute {state} · provider {attestation.compute_node[:12]}… "
+        f"· model {attestation.model or '?'} · job {attestation.job_id[:16]}…"
+    )

@@ -1,0 +1,35 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+test = "test"
+script = "script"
+solc_version = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+# publishScore carries eight parameters plus the cooldown, grade and rate locals, which overflows
+# the legacy codegen's stack. The IR pipeline is the documented fix and also produces better
+# bytecode; the cost is slower compilation, which matters far less than keeping the function
+# readable as one auditable sequence of the two rules §7 requires on-chain.
+
+# 0G Chain is EVM-compatible. Pinning the EVM version rather than taking Foundry's default keeps
+# the deployed bytecode reproducible across Foundry upgrades, which matters because the submission
+# artifact is a mainnet address someone else will want to verify against this source.
+evm_version = "paris"
+
+[rpc_endpoints]
+og_testnet = "${CONTINUUM_OG_RPC_URL_TESTNET}"
+og_mainnet = "${CONTINUUM_OG_RPC_URL_MAINNET}"
+
+[etherscan]
+# 0G's explorer (chainscan) exposes a Blockscout-compatible verification API. Verification is
+# optional for the submission but worth doing: judges reading the Explorer link should be able to
+# see the source, not just bytecode.
+og_testnet = { key = "${OG_EXPLORER_API_KEY}", url = "https://chainscan-galileo.0g.ai/api", chain = 16602 }
+og_mainnet = { key = "${OG_EXPLORER_API_KEY}", url = "https://chainscan.0g.ai/api", chain = 16661 }
+
+[fmt]
+line_length = 110
+tab_width = 4
+bracket_spacing = false

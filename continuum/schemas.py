@@ -82,8 +82,13 @@ class LLMFlags(BaseModel):
     """EXT: §7 requires explainability; a flag with no traceable reason cannot be disputed
     under §11. Deliberately length-capped so it stays an audit note, not an opinion."""
 
-    source: Literal["claude", "offline_fixture"] = "claude"
-    """EXT: ASSUMPTIONS #8 — marks stub output so it is never read as a model judgement."""
+    source: Literal["claude", "0g-compute", "offline_fixture"] = "claude"
+    """EXT: how these flags were obtained, and by whom.
+
+    ``0g-compute`` is the Wave 3 path (§5.2): the reasoning call ran on a 0G Compute provider and
+    the response carries a TEE signature. ``claude`` is a direct Anthropic API call — same prompt,
+    same schema, no attestation. ``offline_fixture`` is neither, and marks stub output so it is
+    never read as a model judgement (ASSUMPTIONS #8)."""
 
     model_used: str = ""
     """EXT: which Claude model produced this, for the §11 audit trail."""
@@ -171,6 +176,13 @@ class BorrowerFeatureRecord(BaseModel):
     """EXT: per-feed decayed freshness in [0,1]. §6 requires a visible per-borrower staleness
     flag; the aggregate data_quality_score alone can't show WHICH feed went dark."""
 
+    compute_attestation: "Attestation | None" = None
+    """EXT: the 0G Compute attestation returned with this record's ``llm_flags``.
+
+    Carried on the record rather than inside ``llm_flags`` so §6's ``llm_flags`` block keeps
+    exactly the four fields the brief prints. The aggregator merges this into the published
+    payload's ``attestation``, which is where §6 wants it."""
+
     borrower_name: str = ""
     sector: str = ""
 
@@ -181,16 +193,94 @@ class BorrowerFeatureRecord(BaseModel):
 
 
 class Attestation(BaseModel):
-    """§9's attestation block. Phase 0 is honest about having none — ASSUMPTIONS #11."""
+    """§6's attestation block, filled by 0G Compute.
+
+    Wave 3 §4: *"the original Phase 0 POC stubbed this with an explicit placeholder type rather
+    than omitting it or faking TEE fields. That placeholder is now filled by the 0G Compute
+    attestation object."* This model is that fill.
+
+    ``type="none"`` survives as the honest fallback for a run that could not reach the Compute
+    marketplace. It is not a degraded ``0g-compute`` — a payload either carries a verified TEE
+    signature or says plainly that it does not, because a field that means "attested" sometimes and
+    "we tried" other times is worse than no field. ``config.OG_REQUIRE_ATTESTATION`` makes the
+    fallback fatal for runs whose output is going to be shown as Integration Proof.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
-    type: Literal["tee", "zk", "none"] = "none"
-    provider: str = "phase_0_offchain_no_attestation"
+    type: Literal["0g-compute", "none"] = "none"
+    provider: str = "not_attested"
+
+    # ---- §6's 0G Compute fields ------------------------------------------------------
+    job_id: str = ""
+    """The chat/request id the response was settled and verified under (``ZG-Res-Key``). This is
+    the handle ``broker.inference.processResponse`` checks the provider's TEE signature against."""
+
+    proof_ref: str = ""
+    """The verification artifact, 0x-prefixed. See ``og/compute.mjs`` for exactly what is captured
+    — it is whatever the broker returns, stored verbatim per §5.2 rather than reshaped."""
+
+    compute_node: str = ""
+    """Provider address on the 0G Compute marketplace. Part of what is attested: a TEE signature
+    proves *a* genuine enclave answered, and the provider identity is what makes it reproducible."""
+
+    verified: bool = False
+    """``broker.inference.processResponse`` returned true for this response.
+
+    Separate from ``type`` on purpose. A response can come back from the marketplace and fail
+    verification, and collapsing that into the type would let an unverified answer render
+    identically to a verified one."""
+
+    model: str = ""
+    """The model the provider served, as reported by ``getServiceMetadata``."""
+
+    # ---- EXT: carried forward from the off-chain phase --------------------------------
     measurement_hash: str = ""
-    """Real sha256 over (model artifact digest + input feature record). Tamper-evident audit
-    value, NOT a proof of honest execution. §8's distinction, kept explicit."""
+    """sha256 over (scorer identity + input feature record), computed locally.
+
+    Kept alongside the 0G attestation rather than replaced by it, because the two prove different
+    things. The 0G signature proves a genuine TEE produced the *reasoning output*; this digest
+    binds the *published score* to the exact feature record and scorer that produced it. Neither
+    says the underlying invoice data was real."""
+
     signature: str | None = None
+
+
+class StorageRef(BaseModel):
+    """§6's ``storage_ref`` — where the Borrower Feature Record actually lives.
+
+    §5.3: the on-chain payload "carries only the resulting content hash/URI, not the raw record".
+    That is a privacy property as much as a gas one: borrower financials do not belong in a public
+    registry, and a merkle root is a commitment to them without being a disclosure.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    provider: Literal["0g-storage", "local"] = "local"
+    root_hash: str = ""
+    """Merkle root from ``ZgFile.merkleTree()``. The permanent identifier a record is fetched by."""
+    uri: str = ""
+    tx_hash: str = ""
+    """The 0G Storage upload transaction, so a reader can confirm the write happened."""
+    uploaded_at: datetime | None = None
+    size_bytes: int = 0
+
+
+class ChainRef(BaseModel):
+    """§6's ``chain_ref`` — the registry transaction that made the score an on-chain fact."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    network: str = ""
+    chain_id: int = 0
+    tx_hash: str = ""
+    contract: str = "ContinuumScoreRegistry"
+    contract_address: str = ""
+    block_number: int = 0
+    explorer_url: str = ""
+    """Direct 0G Explorer link to the transaction. Denormalised into the payload deliberately —
+    §10 makes an Explorer link a submission artifact, and a reader should not have to know how to
+    assemble one from a chain id and a hash."""
 
 
 class ScorePublicationPayload(BaseModel):
@@ -206,6 +296,11 @@ class ScorePublicationPayload(BaseModel):
     trigger_reason: TriggerReason
     model_version: str
     attestation: Attestation
+    storage_ref: StorageRef = Field(default_factory=StorageRef)
+    chain_ref: ChainRef | None = None
+    """§6. ``chain_ref`` is None until the score is published to the registry — every re-score is
+    recorded off-chain (a score held back by the §4 cooldown is still evidence that the gate ran),
+    and only the ones that clear the gate acquire a transaction."""
     published_at: datetime
     explainability_ref: str
 
@@ -222,6 +317,19 @@ class ScorePublicationPayload(BaseModel):
 
     llm_flags: LLMFlags | None = None
     anomaly_pressure: float = 0.0
+
+    # ---- EXT: §4's staleness rule, surfaced on the payload ---------------------------
+    staleness_silent: bool = False
+    """Whether any weighted feed was past its grace period when this score was computed.
+
+    On the payload rather than only in the explanation artifact because ``staleness`` needs it:
+    the ratchet ceiling is "the score at the last observation where every feed was fresh", and
+    finding that observation means scanning the published series for this flag. Keeping it in the
+    artifact would make the rule depend on a file the log does not own."""
+
+    staleness_penalty_points: float = 0.0
+    """Points removed by §4's staleness penalty. Non-negative."""
+
     triggered_by_detail: str = ""
     """EXT: §7 — "Publish a ... 'trigger reason' alongside every score ... don't bury it."
     trigger_reason is the enum; this is the human-readable specifics."""
@@ -233,3 +341,10 @@ class ScorePublicationPayload(BaseModel):
     (ASSUMPTIONS #12); dropping the gated ones would erase the evidence that a gate exists.
     ``consumption.terms_history`` filters on this flag, which is what makes it mean something
     downstream rather than being a field nobody reads."""
+
+
+# ``BorrowerFeatureRecord`` forward-references ``Attestation``, which is defined below it because
+# the file is ordered to match §6's presentation (feature record, then publication payload).
+# Rebuilding here resolves the reference explicitly rather than relying on Pydantic's deferred
+# rebuild happening to fire before the first validation.
+BorrowerFeatureRecord.model_rebuild()

@@ -43,7 +43,7 @@ from continuum.ingestion.features import RawData
 from continuum.schemas import LLMFlags, ScorePublicationPayload, TriggerReason
 from continuum.scoring import aggregate, llm_agent
 from continuum.scoring.anomaly import AnomalyReport, detect
-from continuum.scoring.structured import StructuredModel
+from continuum.scoring.aggregate import load_scorer
 
 HISTORY_OBSERVATIONS = 20
 """Prior observations handed to the anomaly layer. Must clear ``ANOMALY_MIN_HISTORY`` (14) or the
@@ -184,6 +184,33 @@ def _reusable_flags(borrower_id: str, documents: list[dict], as_of: datetime) ->
     return prior.llm_flags if newest(as_of) == newest(prior.as_of) else None
 
 
+def new_document_since_last_score(
+    borrower_id: str, documents: list[dict], as_of: datetime
+) -> dict | None:
+    """The newest document that has arrived since this borrower was last scored, if any.
+
+    §7's event path is "any new data event from Layer 1 that crosses a materiality threshold", and
+    §6 lists covenant and document data as a Layer 1 source. The anomaly layer cannot see this one:
+    it watches numeric features, and a breach notice is not a number until the agent has read it.
+    So the document feed carries its own materiality test, and it is the simplest possible one —
+    *the file changed*. Unlike a z-score there is no noise to threshold against: a borrower does
+    not file a breach notice by accident, and a re-read of an unchanged file is exactly what
+    ``_reusable_flags`` already declines to spend a call on.
+
+    Returns the document rather than a boolean so the caller can name it in ``trigger_reason``
+    detail — §7 is explicit that the trigger reason must not be buried.
+    """
+    prior = store.load_feature_record(borrower_id)
+    visible = llm_agent.visible_documents(documents, as_of)
+    if not visible:
+        return None
+    if prior is None:
+        return visible[0]
+    seen = {d["doc_id"] for d in llm_agent.visible_documents(documents, prior.as_of)}
+    fresh = [d for d in visible if d["doc_id"] not in seen]
+    return fresh[0] if fresh else None
+
+
 # --------------------------------------------------------------------------------------
 # The shared scoring step
 # --------------------------------------------------------------------------------------
@@ -194,7 +221,7 @@ def rescore(
     raw: RawData,
     as_of: datetime,
     *,
-    model: StructuredModel,
+    model,
     documents: list[dict],
     trigger_reason: TriggerReason | None = None,
     fresh_llm: bool = False,
@@ -233,6 +260,7 @@ def rescore(
         borrower, b_raw, as_of, documents=documents, base_dso=base_dso, llm_flags=flags
     )
 
+    history = store.load_scores(borrower_id)
     prior, last_published = _prior_state(borrower_id)
     report = detect(
         record.features,
@@ -254,6 +282,7 @@ def rescore(
         prior=prior,
         last_published=last_published,
         published_at=as_of,
+        history=history,
     )
     if persist:
         aggregate.publish(result)
@@ -275,7 +304,7 @@ def daily(
 ) -> list[aggregate.ScoreResult]:
     """Re-score every active borrower once, at a per-borrower jittered cut-off."""
     as_of = utc(as_of) if as_of else data_horizon()
-    model = StructuredModel.load()
+    model = load_scorer()
     raw = store.load_raw()
     borrowers = [b for b in store.load_borrowers() if borrower_id in (None, b["borrower_id"])]
 
@@ -344,7 +373,7 @@ def event(
     event arrives, so there is no predictable window to hide from.
     """
     as_of = utc(as_of) if as_of else data_horizon()
-    model = StructuredModel.load()
+    model = load_scorer()
     raw = store.load_raw()
     borrower = next((b for b in store.load_borrowers() if b["borrower_id"] == borrower_id), None)
     if borrower is None:
@@ -370,15 +399,35 @@ def event(
         prior_dq=prior.data_quality_score if prior else None,
     )
 
+    # The document feed's own materiality test, which the anomaly layer structurally cannot make.
+    # Checked after the numeric signals so a borrower whose feeds are also deviating keeps the
+    # trigger reason that names the deviation — the number is the more urgent fact.
+    fresh_document = (
+        None if report.triggered else new_document_since_last_score(borrower_id, documents, as_of)
+    )
+
     if verbose:
         print(f"Event check — {borrower.get('name', borrower_id)} ({borrower_id})")
-        print(f"as-of {iso(as_of)}\n  {report.summary()}\n")
+        print(f"as-of {iso(as_of)}\n  {report.summary()}")
+        if fresh_document:
+            print(
+                f"  new document since last score: {fresh_document['doc_id']} "
+                f"({fresh_document['doc_type']})"
+            )
+        print()
 
-    if not report.triggered and not force:
+    if not report.triggered and fresh_document is None and not force:
         if verbose:
             print("Nothing material. No re-score, nothing written.")
             print("(Pass --force to score anyway; it is stamped manual_rescore, not an event.)")
         return None
+
+    if report.triggered:
+        trigger: TriggerReason = report.trigger_reason
+    elif fresh_document is not None:
+        trigger = "event_document"
+    else:
+        trigger = "manual_rescore"
 
     result, _ = rescore(
         borrower,
@@ -386,8 +435,11 @@ def event(
         as_of,
         model=model,
         documents=documents,
-        trigger_reason=report.trigger_reason if report.triggered else "manual_rescore",
-        fresh_llm=fresh_llm,
+        trigger_reason=trigger,
+        # A new document is only an event because it has not been read yet, so reading it is the
+        # whole point of the re-score. Reusing the cached assessment would publish under
+        # ``event_document`` a score that never saw the document.
+        fresh_llm=fresh_llm or fresh_document is not None,
         persist=persist,
     )
 

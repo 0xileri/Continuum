@@ -47,7 +47,7 @@ from continuum import config
 from continuum.clock import iso, utc
 from continuum.ingestion import store
 from continuum.scoring import calibration
-from continuum.schemas import ScorePublicationPayload
+from continuum.schemas import BorrowerFeatureRecord, ScorePublicationPayload
 
 # --------------------------------------------------------------------------------------
 # The pure formulas — §11's f() and g()
@@ -327,6 +327,22 @@ def latest_terms(
     return history[-1] if history else None
 
 
+def eligible_receivables_from(record: BorrowerFeatureRecord | None) -> float | None:
+    """Recover the open receivables book from a published feature record.
+
+    ``onchain_existing_leverage_ratio`` is outstanding / ``revenue_30d`` by construction, so the
+    product recovers the collateral base without the consumption layer reaching back into raw
+    invoice data it has no business reading — §11 keeps this module to arithmetic over what was
+    published. Returns ``None`` when revenue is zero, since the ratio carries no information then.
+    """
+    if record is None:
+        return None
+    f = record.features
+    if f.revenue_30d <= 0:
+        return None
+    return round(f.onchain_existing_leverage_ratio * f.revenue_30d, 2)
+
+
 def _hours_between(earlier: datetime, later: datetime) -> float:
     return (utc(later) - utc(earlier)).total_seconds() / 3600.0
 
@@ -360,15 +376,7 @@ def _print_history(borrower_id: str) -> None:
         print(f"\nNo scores on file for {borrower_id}. Run: python -m continuum.orchestrator daily")
         return
 
-    features = store.load_feature_record(borrower_id)
-    receivables = None
-    if features is not None:
-        # Reconstruct the open receivables book from the published features: the leverage ratio is
-        # outstanding / revenue_30d, so the product recovers the collateral base without the
-        # consumption layer reaching back into raw data it has no business reading.
-        receivables = round(
-            features.features.onchain_existing_leverage_ratio * features.features.revenue_30d, 2
-        )
+    receivables = eligible_receivables_from(store.load_feature_record(borrower_id))
 
     history = terms_history(scores, eligible_receivables=receivables)
     print(f"\n\nTerms replay — {borrower_id}"
