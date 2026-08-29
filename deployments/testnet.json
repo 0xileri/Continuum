@@ -1,0 +1,14 @@
+{
+  "network": "0g-galileo-testnet",
+  "chain_id": 16602,
+  "address": "0xceB1a3B3bA1B2588A8Ec434F8d406D757262eE28",
+  "tx_hash": "0x7c9e9138322488a6f658ec38eded9c71bd45a6ff8b2a683cf07750c20a723f9d",
+  "block_number": 52089759,
+  "explorer_url": "https://chainscan-galileo.0g.ai/address/0xceB1a3B3bA1B2588A8Ec434F8d406D757262eE28",
+  "contract": "ContinuumScoreRegistry",
+  "deployer": "0x429dEFd14714Be86A0938777d8814A932743FF16",
+  "cooldown_seconds": 21600,
+  "max_rate_change_bps": 50,
+  "deployed_at": "2026-08-29T22:54:29.841Z",
+  "authorized_scorer": "0x429dEFd14714Be86A0938777d8814A932743FF16"
+}

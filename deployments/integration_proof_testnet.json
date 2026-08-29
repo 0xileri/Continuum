@@ -1,0 +1,86 @@
+{
+  "project": "Continuum",
+  "network": "0g-galileo-testnet",
+  "chain_id": 16602,
+  "contract": "ContinuumScoreRegistry",
+  "contract_address": "0xceB1a3B3bA1B2588A8Ec434F8d406D757262eE28",
+  "contract_explorer_url": "https://chainscan-galileo.0g.ai/address/0xceB1a3B3bA1B2588A8Ec434F8d406D757262eE28",
+  "storage_explorer": "https://storagescan-galileo.0g.ai",
+  "generated_at": "2026-08-30T00:15:00Z",
+  "publications": [
+    {
+      "borrower_id": "brw_01hx8k2m4n",
+      "name": "Meridian Components Ltd",
+      "score": "BBB",
+      "score_numeric": 727,
+      "tx_hash": "0x0ac994ae3b8833ad40563ab2e5ef1b44d4f73d648f32a81a48619a3df25cd18e",
+      "explorer_url": "https://chainscan-galileo.0g.ai/tx/0x0ac994ae3b8833ad40563ab2e5ef1b44d4f73d648f32a81a48619a3df25cd18e",
+      "storage_root_hash": "0x41bbcef8def25a70eb90e77715c117e45cc758ebd8b698f161846c115cd092d3",
+      "attestation_job_id": "",
+      "compute_node": "",
+      "attested": false
+    },
+    {
+      "borrower_id": "brw_01hx9p3q7r",
+      "name": "Talbot Fresh Produce",
+      "score": "BBB",
+      "score_numeric": 700,
+      "tx_hash": "0xa7d6ba6ce476328bfc19e527a6418d8c1e30d4095af3a174c764b76956f77532",
+      "explorer_url": "https://chainscan-galileo.0g.ai/tx/0xa7d6ba6ce476328bfc19e527a6418d8c1e30d4095af3a174c764b76956f77532",
+      "storage_root_hash": "0xcfff6acf85b41f15a296535786ed954d8fcfd97fd10627dc9ae6e51f1ce172c8",
+      "attestation_job_id": "",
+      "compute_node": "",
+      "attested": false
+    },
+    {
+      "borrower_id": "brw_01hxa4s8t2",
+      "name": "Ravensworth Medical Supply",
+      "score": "BBB-",
+      "score_numeric": 685,
+      "tx_hash": "0xaabe7dfe919d5b1483bc718d4dc3e3909d0b95c804c4783cfa85b706433ee953",
+      "explorer_url": "https://chainscan-galileo.0g.ai/tx/0xaabe7dfe919d5b1483bc718d4dc3e3909d0b95c804c4783cfa85b706433ee953",
+      "storage_root_hash": "0xadd077326f02ff97ff14fce58e11581ee17779e64edaa1db0d12769be9a82217",
+      "attestation_job_id": "",
+      "compute_node": "",
+      "attested": false
+    },
+    {
+      "borrower_id": "brw_01hxk6j9m3",
+      "name": "Fenwick Industrial Spares",
+      "score": "A-",
+      "score_numeric": 737,
+      "tx_hash": "0xb5706d575187a0a1154de55f4e633788976d82b804b9af8739c60756cf648807",
+      "explorer_url": "https://chainscan-galileo.0g.ai/tx/0xb5706d575187a0a1154de55f4e633788976d82b804b9af8739c60756cf648807",
+      "storage_root_hash": "0x72fdebd14f8e9d528314a411554dfc3538482cf69df064eb8e99769511804c9c",
+      "attestation_job_id": "",
+      "compute_node": "",
+      "attested": false
+    },
+    {
+      "borrower_id": "brw_01hxk6j9m3",
+      "name": "Fenwick Industrial Spares",
+      "score": "BB-",
+      "score_numeric": 597,
+      "tx_hash": "0xe55abc5537152cafb10d4b4da79b3edc83ae7735980d0074cd5a0b3c75108ccb",
+      "explorer_url": "https://chainscan-galileo.0g.ai/tx/0xe55abc5537152cafb10d4b4da79b3edc83ae7735980d0074cd5a0b3c75108ccb",
+      "storage_root_hash": "0xe7d8fa99a932370e4be56b9ef93d2dde62cea8c53188d79542e68cebfb324157",
+      "attestation_job_id": "",
+      "compute_node": "",
+      "attested": false
+    }
+  ],
+  "og_components": {
+    "0g-storage": "PROVEN — Borrower Feature Records written to 0G Storage and referenced on-chain by merkle root (§5.3)",
+    "0g-chain": "PROVEN — ContinuumScoreRegistry, with the §4 cooldown and §5.4 ±50bps circuit breaker enforced in bytecode (§5.4, §7)",
+    "0g-compute": "NOT PROVEN IN THIS RUN — every publication below carries attested:false. The code path is complete and the marketplace reachable (2 providers with acknowledged TEE signers), but the provider enforces a 1.0 0G minimum locked balance in its sub-account, which this faucet-funded wallet could not meet. No score here carries a TEE attestation."
+  },
+  "scope_note": "0G Compute serves inference against registered providers and does not execute arbitrary jobs, so §5.2's stated fallback applies: the reasoning call runs on 0G Compute and the aggregation arithmetic runs off-chain, bound to its inputs by measurement_hash. Flagged, not mocked.",
+  "publication_count": 5,
+  "attested_count": 0,
+  "verified_on_chain": {
+    "cooldown_enforced": "A same-band republish of brw_01hx8k2m4n was refused by the contract with 21399s remaining.",
+    "boundary_crossing_override": "brw_01hxk6j9m3 fell A-/737 -> BB-/597 and published immediately inside that same cooldown window (tx 0xe55abc5537152caf...), which is §4's one-sided rule.",
+    "circuit_breaker": "That downgrade's unclamped rate move was 975bps (903 -> 1878); the contract stored 953bps, a move of exactly 50bps.",
+    "storage_round_trip": "Root 0x41bbcef8def25a70... was downloaded back with merkle proof verification and matched the published feature record."
+  }
+}

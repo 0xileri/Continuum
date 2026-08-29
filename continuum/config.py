@@ -15,6 +15,22 @@ from pathlib import Path
 # --------------------------------------------------------------------------------------
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Load the repo-root .env before any os.getenv below reads a default.
+#
+# .env.example documents OG_PRIVATE_KEY, CONTINUUM_OG_NETWORK and the rest, and python-dotenv is a
+# declared dependency — but nothing was actually reading the file, so every documented variable
+# silently did nothing unless it was also exported. A documented config file that no code reads is
+# worse than none: it looks like configuration and behaves like a comment.
+#
+# override=False so an explicit export still wins over the file, which is what makes a one-off run
+# against a different network or key possible without editing anything.
+try:  # pragma: no cover - trivial, and absence must never be fatal
+    from dotenv import load_dotenv
+
+    load_dotenv(PROJECT_ROOT / ".env", override=False)
+except ImportError:
+    pass
 DATA_DIR = Path(os.getenv("CONTINUUM_DATA_DIR", PROJECT_ROOT / "data"))
 
 RAW_DIR = DATA_DIR / "raw"

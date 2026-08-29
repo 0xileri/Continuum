@@ -90,10 +90,22 @@ making one would have been time spent against a gate that is not open.
 See A1. This is the one scope reduction §5.2 explicitly sanctions, and it is taken for the reason
 §5.2 anticipated.
 
-### B2. No mainnet deployment was performed by the build agent
+### B2. Deployed to testnet; mainnet deployment still requires your key
 
-**This is the one Wave 3 exit criterion not met in this session, and it is a hard submission
-requirement (§3).**
+**Galileo testnet is live and proven** — see `deployments/testnet.json` and
+`deployments/integration_proof_testnet.json`:
+
+| | |
+|---|---|
+| Registry | `0xceB1a3B3bA1B2588A8Ec434F8d406D757262eE28` |
+| Publish transactions | 5, across 4 borrowers |
+| 0G Storage | feature records written; one round-tripped with merkle proof |
+| §4 cooldown | refused a same-band republish, 21399s remaining |
+| §4 override | a boundary-crossing downgrade published inside that same window |
+| §5.4 breaker | clamped a 975bps move to exactly 50bps |
+| 0G Compute | **not attested** — see C14 |
+
+**Mainnet is the remaining §3 exit criterion.**
 
 Deploying `ContinuumScoreRegistry` to 0G Chain mainnet requires a funded private key signing a
 real, irreversible transaction. Funding the 0G Compute ledger (minimum 3 0G) and writing to 0G
@@ -282,17 +294,35 @@ honest failure is a visible gap, never a plausible-looking placeholder.
 
 ---
 
+## C14. The 0G Compute provider enforces a 1.0 0G sub-account minimum
+
+Discovered on the live testnet run, and it is the binding constraint on attestation:
+
+- The SDK refuses to *create* a ledger below **3 0G** — a client-side guard whose error text claims
+  "the contract requires a minimum of 3 0G". That is wrong: `LedgerManager.MIN_ACCOUNT_BALANCE` read
+  from the chain is **0.1 0G**. `fund.mjs --direct` calls the same `addLedger(string) payable` the
+  SDK calls, skipping only the incorrect guard. It still refuses anything below the real on-chain
+  minimum.
+- The **provider** separately requires **1.0 0G locked** in its sub-account, enforced server-side:
+  `insufficient balance: your locked balance is 0.125 0G, but the required minimum is 1.0 0G`. There
+  is no way around this one, and none should be sought — it is the provider's own policy.
+
+So a wallet needs roughly **1.2 0G** for attested scoring, not the 3–4 the docs imply, and not the
+0.1 the contract alone would allow.
+
+---
+
 ## D. What is not done
 
-1. **Mainnet deployment and the first publish transactions.** See B2. This is the hard §3
-   requirement and it needs your key. Everything up to the signature is built and preflighted.
+1. **Mainnet deployment and the first publish transactions.** See B2. Everything is proven on
+   testnet; mainnet needs a funded key and is the one hard §3 criterion outstanding.
 2. **Agentic ID (§5.5).** Correctly gated — see A3.
 3. **A demo video, X post and pitch deck (§10).** Submission artifacts that need the mainnet
    address from step 1, and a person.
-4. **A live run of the 0G Compute path.** The marketplace is reachable and two providers have
-   acknowledged TEE signers, but an actual inference call needs a funded ledger. The code path is
-   written against the real SDK 0.9.0 API surface (verified method-by-method against the shipped
-   type definitions), not against the docs.
+4. **An attested score.** The Compute path runs end to end — broker, provider selection, request
+   signing — and fails at the provider's 1.0 0G sub-account minimum (C14). Every published score
+   therefore carries `attestation.type = "none"`, which the payload, the artifact and the dashboard
+   all state plainly. ~1.2 0G in the wallet closes this.
 
 ---
 

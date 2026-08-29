@@ -11,8 +11,50 @@
 // stdout, put everything human-readable on stderr. Any failure exits non-zero with
 // {"ok": false, "error": ...} on stdout, so the caller never has to parse a traceback.
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { ethers } from 'ethers'
+
+// Load the repo-root .env, so the signing key can live in one gitignored file rather than being
+// exported into a shell. Python's side already reads it via python-dotenv; without this the Node
+// bridge would be the one component that needed the secret in the environment, which is the one
+// place it is most likely to end up in a shell history or a captured log.
+//
+// Deliberately does NOT overwrite an already-set variable: an explicit `export` in the calling
+// shell should win over a file, so a one-off run against a different key does not silently pick up
+// the checked-out .env instead.
+function loadDotEnv() {
+  const path = join(dirname(dirname(fileURLToPath(import.meta.url))), '.env')
+  if (!existsSync(path)) return
+  for (const line of readFileSync(path, 'utf-8').split(/\r?\n/)) {
+    const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(line)
+    if (!match) continue
+    const [, key] = match
+    let value = match[2].trim()
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1)
+    }
+    if (value && process.env[key] === undefined) process.env[key] = value
+  }
+}
+loadDotEnv()
+
+// Keep stdout clean for the JSON result — the contract with the Python side is exactly one JSON
+// object on stdout and everything human-readable on stderr.
+//
+// The 0G Storage SDK does not honour that: it console.logs upload options and node status during
+// `indexer.upload`, which lands on stdout and makes the result unparseable. Rather than have every
+// caller strip vendor chatter — a fragile guess about what a future SDK version happens to print —
+// this redirects console.log/info/debug to stderr process-wide. `ok()` and `fail()` write to
+// process.stdout directly, so they are unaffected, and the SDK's diagnostics stay visible in the
+// bridge log where they belong.
+console.log = (...args) => console.error(...args)
+console.info = (...args) => console.error(...args)
+console.debug = (...args) => console.error(...args)
 
 export const NETWORKS = {
   mainnet: {

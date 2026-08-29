@@ -98,12 +98,31 @@ def preflight(args) -> bool:
     return True
 
 
+def _load_existing_proof() -> dict | None:
+    path = config.PROJECT_ROOT / "deployments" / f"integration_proof_{config.OG_NETWORK}.json"
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--limit", type=int, default=5, help="How many borrowers to publish")
     parser.add_argument("--borrower", default=None, help="Publish one specific borrower")
     parser.add_argument("--as-of", default=None, help="ISO timestamp; defaults to the data horizon")
     parser.add_argument("--yes", action="store_true", help="Actually spend 0G")
+    parser.add_argument(
+        "--force-publish",
+        action="store_true",
+        help="Ignore the OFF-CHAIN publish gate and put the current score on chain regardless. "
+        "The gate exists to keep insignificant drift out of the registry during ordinary "
+        "operation; a deliberate proof run wants the current score published whether or not it "
+        "moved since the last one. The ON-CHAIN §4 cooldown still applies — the registry enforces "
+        "it independently (§7), and it is not overridable from here by design.",
+    )
     parser.add_argument(
         "--allow-unattested",
         action="store_true",
@@ -169,6 +188,13 @@ def main() -> int:
             )
             continue
 
+        if args.force_publish and not result.payload.published_onchain:
+            result.payload.published_onchain = True
+            result.explanation["publish_decision"]["forced"] = (
+                "--force-publish: the off-chain gate held this score, and a deliberate proof run "
+                "overrode it. The on-chain cooldown still applies."
+            )
+
         aggregate.publish_to_0g(result)
         store.save_explanation(result.payload.explainability_ref, result.explanation)
         store.save_feature_record(result.record)
@@ -206,6 +232,18 @@ def main() -> int:
     # Written to a file rather than only printed, because that list is a submission deliverable and
     # scrollback is not.
     profile = config.og()
+
+    # Merge with anything a previous run recorded, keyed by transaction hash. The artifact is a
+    # claim about what is on chain, not a log of the last invocation — overwriting it would make
+    # a second run silently erase the first run's evidence.
+    if out_existing := _load_existing_proof():
+        seen = {p["tx_hash"] for p in published}
+        published = published + [
+            p for p in out_existing.get("publications", []) if p["tx_hash"] not in seen
+        ]
+        published.sort(key=lambda p: p.get("tx_hash", ""))
+
+    attested_count = sum(1 for p in published if p.get("attested"))
     proof = {
         "project": "Continuum",
         "network": profile["name"],
@@ -216,11 +254,25 @@ def main() -> int:
         "storage_explorer": profile["storage_explorer"],
         "generated_at": iso(utc(datetime.now())),
         "publications": published,
+        "publication_count": len(published),
+        "attested_count": attested_count,
+        # Describe what these transactions actually demonstrate, not what the integration is
+        # capable of. A component line that reads "TEE-signed and broker-verified" above a list of
+        # records all marked attested:false is the overclaim §11 warns a real reader finds first.
         "og_components": {
-            "0g-compute": "document reasoning call, TEE-signed and broker-verified (§5.2)",
-            "0g-storage": "Borrower Feature Records, referenced on-chain by merkle root (§5.3)",
-            "0g-chain": "ContinuumScoreRegistry — score registry with on-chain cooldown and "
-            "circuit breaker (§5.4, §7)",
+            "0g-storage": "PROVEN — Borrower Feature Records written to 0G Storage and referenced "
+            "on-chain by merkle root (§5.3)",
+            "0g-chain": "PROVEN — ContinuumScoreRegistry, with the §4 cooldown and §5.4 ±50bps "
+            "circuit breaker enforced in bytecode (§5.4, §7)",
+            "0g-compute": (
+                "PROVEN — reasoning call executed on a 0G Compute provider and the TEE signature "
+                "verified by the broker (§5.2)"
+                if attested_count
+                else "NOT PROVEN IN THIS RUN — every publication below carries attested:false. "
+                "The code path is complete and the marketplace reachable, but the provider "
+                "enforces a 1.0 0G minimum locked balance in its sub-account, which this wallet "
+                "could not meet. No score here carries a TEE attestation."
+            ),
         },
         "scope_note": (
             "0G Compute serves inference against registered providers and does not execute "

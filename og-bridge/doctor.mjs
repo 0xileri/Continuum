@@ -73,7 +73,9 @@ async function main() {
           : `get testnet 0G: https://faucet.0g.ai (address ${wallet.address})`
       )
     } else {
-      check('native balance', og < 0.5 ? WARN : PASS, `${og.toFixed(4)} 0G`)
+      // 0.35 covers a ledger at twice the on-chain minimum plus a deploy and a handful of
+      // publishes, with room to spare. Below that a run can start and strand halfway.
+      check('native balance', og < 0.35 ? WARN : PASS, `${og.toFixed(4)} 0G`)
     }
   } catch (err) {
     check('rpc reachable', FAIL, String(err.shortMessage ?? err.message), `check ${net.rpc}`)
@@ -126,14 +128,14 @@ async function main() {
         '0G Compute ledger',
         available > 0 ? PASS : FAIL,
         `${available.toFixed(4)} 0G available`,
-        available > 0 ? '' : 'node og-bridge/fund.mjs --amount 3'
+        available > 0 ? '' : 'node og-bridge/fund.mjs --amount 0.2 --yes'
       )
     } catch {
       check(
         '0G Compute ledger',
         FAIL,
         'no ledger account',
-        'node og-bridge/fund.mjs --amount 3   (creates it; minimum 3 0G)'
+        'node og-bridge/fund.mjs --amount 0.2 --yes   (on-chain minimum is 0.1 0G)'
       )
     }
   } catch (err) {

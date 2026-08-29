@@ -149,11 +149,11 @@ node og-bridge/doctor.mjs
 
 **1. Fund the wallet.** Galileo testnet: https://faucet.0g.ai
 
-**2. Fund the 0G Compute ledger** (minimum 3 0G; the scoring path deliberately never does this for
+**2. Fund the 0G Compute ledger** (on-chain minimum is 0.1 0G; the scoring path deliberately never does this for
 you):
 
 ```bash
-node og-bridge/fund.mjs --amount 3 --yes
+node og-bridge/fund.mjs --amount 0.2 --yes
 ```
 
 **3. Deploy the registry — testnet first**, per §9's Day 3 sequencing:

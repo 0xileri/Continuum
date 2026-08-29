@@ -131,8 +131,25 @@ def call_bridge(script: str, payload: dict, *, timeout: int | None = None) -> di
 
     try:
         result = json.loads(stdout)
-    except json.JSONDecodeError as exc:
-        raise BridgeError(f"{script} wrote unparseable output: {stdout[:500]}") from exc
+    except json.JSONDecodeError:
+        # The bridge redirects console.* to stderr precisely so this cannot happen, but a vendor SDK
+        # writing to process.stdout directly would still slip past that. Recover the result rather
+        # than losing a completed on-chain write to a logging quirk: the JSON object is the last
+        # thing written, so scan backwards for the first line that parses.
+        result = None
+        for line in reversed(stdout.splitlines()):
+            line = line.strip()
+            if line.startswith("{") and line.endswith("}"):
+                try:
+                    result = json.loads(line)
+                    break
+                except json.JSONDecodeError:
+                    continue
+        if result is None:
+            raise BridgeError(
+                f"{script} wrote unparseable output. Last 500 chars:\n{stdout[-500:]}"
+            ) from None
+        log.warning("%s mixed non-JSON output into stdout; recovered the result", script)
 
     if not result.get("ok", False):
         error = str(result.get("error", "unknown bridge failure"))
