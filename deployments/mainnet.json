@@ -10,5 +10,18 @@
   "cooldown_seconds": 21600,
   "max_rate_change_bps": 50,
   "deployed_at": "2026-08-31T12:48:20.003Z",
-  "authorized_scorer": "0xb0F086D0F9E5E33c97dc9Afe61Dad7165d5F981B"
+  "authorized_scorer": "0xb0F086D0F9E5E33c97dc9Afe61Dad7165d5F981B",
+  "source_tag": "mainnet-registry-0x96406Be2",
+  "source_commit": "7aa9692",
+  "source_url": "https://github.com/valeriusxix/Continuum/tree/mainnet-registry-0x96406Be2/contracts/src/ContinuumScoreRegistry.sol",
+  "source_keccak256": "0xa47f717c204cee0d7be05ca56f6cf1ebea4f55c046e1a5ebe08abe94fe9106f7",
+  "build": {
+    "solc": "0.8.24+commit.e11b9ed9",
+    "optimizer": true,
+    "optimizer_runs": 200,
+    "via_ir": true,
+    "evm_version": "paris"
+  },
+  "bytecode_verified": "eth_getCode matches the compiled artifact's deployedBytecode exactly, metadata included",
+  "source_note": "main has moved on from this source (db2d939 added verifiedAttestations gating), so building from main will NOT reproduce this bytecode. Build from tag mainnet-registry-0x96406Be2."
 }

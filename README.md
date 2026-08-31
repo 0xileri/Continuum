@@ -9,6 +9,12 @@ re-scored from live financial signal instead of once at origination, and the sco
 parameters are enumerated in [`deployments/integration_proof_mainnet.json`](deployments/integration_proof_mainnet.json),
 which is generated from the registry's own `ScorePublished` events rather than from a build log.
 
+> **Verifying the contract.** The source has moved on since deployment, so building from `main`
+> will not reproduce the deployed bytecode. Build from the tag
+> [`mainnet-registry-0x96406Be2`](https://github.com/valeriusxix/Continuum/tree/mainnet-registry-0x96406Be2) — solc 0.8.24, optimizer on at 200 runs, `via_ir`, evm `paris`.
+> `eth_getCode` at the address above is byte-for-byte identical to that build's
+> `deployedBytecode`, metadata hash included.
+
 Built for **0G Bridge by AKINDO — Wave 3**. Scope, decisions and open questions live in
 [`docs/wave3-brief.pdf`](docs/wave3-brief.pdf) (the brief) and [`WAVE3.md`](WAVE3.md) (what this build
 assumed, reduced or left open).
