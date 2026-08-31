@@ -177,6 +177,7 @@ def publish_decision(
     trigger_reason: TriggerReason,
     published_at: datetime,
     last_published: ScorePublicationPayload | None,
+    attested: bool = False,
 ) -> tuple[bool, str]:
     """§10's threshold-crossing and cooldown discipline. Returns ``(publish, reason)``.
 
@@ -199,6 +200,24 @@ def publish_decision(
     """
     if last_published is None:
         return True, "first publication for this borrower"
+
+    # An attestation upgrade publishes even when the number has not moved.
+    #
+    # The gate's other rules all ask "has the score changed enough to be worth gas?", which is the
+    # right question for score drift and the wrong one here. Going from an unattested score to one
+    # carrying a verified 0G Compute TEE signature does not change the number — it changes what the
+    # number is *worth*, which is the entire premise of §2. A consuming pool filtering on `attested`
+    # sees a different record; leaving the chain saying `attested: false` while a verified signature
+    # sits off-chain would understate the system precisely where it is strongest.
+    #
+    # One-directional, like the cooldown override. An attested score becoming unattested (a Compute
+    # outage, say) is not news worth gas — the honest thing there is to leave the better record
+    # standing and let the next real score movement carry the downgrade.
+    if attested and not last_published.attestation.verified:
+        return True, (
+            "attestation upgraded: this score carries a verified 0G Compute TEE signature and the "
+            "published one does not"
+        )
 
     drift = abs(score_numeric - last_published.score_numeric)
     grade_moved = grade != last_published.score
@@ -372,6 +391,7 @@ def score(
         trigger_reason=trigger_reason,
         published_at=published_at,
         last_published=last_published,
+        attested=att.verified,
     )
 
     payload = ScorePublicationPayload(

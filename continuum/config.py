@@ -158,9 +158,13 @@ OG_COMPUTE_PROVIDER = os.getenv("CONTINUUM_OG_COMPUTE_PROVIDER", "")
 ``listService`` returns", which is fine for a demo and wrong for anything reproducible — the
 provider identity is part of what the attestation attests to."""
 
-OG_BRIDGE_TIMEOUT_S = int(os.getenv("CONTINUUM_OG_BRIDGE_TIMEOUT", "180"))
+OG_BRIDGE_TIMEOUT_S = int(os.getenv("CONTINUUM_OG_BRIDGE_TIMEOUT", "300"))
 """Per-call ceiling on the Node bridge. 0G Storage uploads and Compute settlement both wait on
-chain confirmations, so this is minutes rather than seconds."""
+chain confirmations, so this is minutes rather than seconds.
+
+Raised from 180s after a mainnet inference call exceeded it. Mainnet is busier than Galileo, and
+on the mainnet path a bridge timeout is no longer recoverable — it aborts the borrower rather than
+falling back to unattested flags — so a too-short default converts a slow network into lost work."""
 
 OG_REQUIRE_ATTESTATION = os.getenv("CONTINUUM_OG_REQUIRE_ATTESTATION", "0") == "1"
 """Mandatory verification for any publish path when explicitly enabled.

@@ -164,3 +164,90 @@ def test_publish_wave3_preflight_requires_publish_flag(monkeypatch):
 
     args = types.SimpleNamespace(limit=1, yes=True)
     assert publish_wave3.preflight(args) is False
+
+# --------------------------------------------------------------------------------------
+# Attestation upgrades
+# --------------------------------------------------------------------------------------
+
+
+def _attested(payload):
+    payload.attestation.type = "0g-compute"
+    payload.attestation.verified = True
+    return payload
+
+
+def test_an_attestation_upgrade_publishes_even_when_the_score_is_unchanged():
+    """§2 is the reason this project is on 0G, and the gate has to reflect that.
+
+    Going from an unattested score to one carrying a verified TEE signature does not move the
+    number — it changes what the number is worth. Without this rule an attested score can never
+    reach the chain unless the score independently drifts, so the registry would keep saying
+    `attested: false` while a verified signature sat off-chain. Caught on mainnet, where four
+    freshly-attested scores were all held by the gate.
+    """
+    published = make_payload(score_numeric=700, score="BBB")
+    ok, reason = publish_decision(
+        score_numeric=700,
+        grade="BBB",
+        trigger_reason="scheduled_daily",
+        published_at=T0 + timedelta(hours=1),
+        last_published=published,
+        attested=True,
+    )
+    assert ok and "attestation upgraded" in reason
+
+
+def test_an_already_attested_score_is_still_gated_on_drift():
+    """The upgrade rule fires on the transition, not on being attested."""
+    published = _attested(make_payload(score_numeric=700, score="BBB"))
+    ok, _ = publish_decision(
+        score_numeric=703,
+        grade="BBB",
+        trigger_reason="scheduled_daily",
+        published_at=T0 + timedelta(hours=1),
+        last_published=published,
+        attested=True,
+    )
+    assert not ok
+
+
+def test_losing_attestation_does_not_itself_publish():
+    """One-directional, like the cooldown override.
+
+    An attested score becoming unattested — a Compute outage, say — is not news worth gas. Leave
+    the better record standing and let the next real score movement carry it.
+    """
+    published = _attested(make_payload(score_numeric=700, score="BBB"))
+    ok, _ = publish_decision(
+        score_numeric=700,
+        grade="BBB",
+        trigger_reason="scheduled_daily",
+        published_at=T0 + timedelta(hours=1),
+        last_published=published,
+        attested=False,
+    )
+    assert not ok
+
+
+def test_an_attestation_upgrade_publishes_during_a_cooldown():
+    """The upgrade rule is checked before the cooldown, and that is safe rather than sloppy.
+
+    The cooldown exists to damp update *storms*, and this rule cannot produce one: it fires only on
+    the false -> true transition, which happens at most once per borrower per attestation outage.
+    A borrower re-scored every hour with a stable attestation hits the ordinary drift rules, not
+    this one — ``test_an_already_attested_score_is_still_gated_on_drift`` pins that.
+
+    Making it wait would mean up to six hours of the registry reporting `attested: false` for a
+    score whose verified signature already exists, for no reduction in write volume.
+    """
+    published = _attested(make_payload(score_numeric=700, score="BBB"))
+    published.attestation.verified = False
+    ok, reason = publish_decision(
+        score_numeric=700,
+        grade="BBB",
+        trigger_reason="event_anomaly",
+        published_at=T0 + timedelta(hours=config.RESCORE_COOLDOWN_HOURS - 1),
+        last_published=published,
+        attested=True,
+    )
+    assert ok and "attestation upgraded" in reason

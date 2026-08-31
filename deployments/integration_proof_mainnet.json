@@ -1,6 +1,6 @@
 {
   "project": "Continuum",
-  "generated_at": "2026-08-31T13:08:38.203Z",
+  "generated_at": "2026-08-31T15:54:45.977Z",
   "source": "derived from on-chain ScorePublished events, not from the publish script log",
   "network": "0g-chain-mainnet",
   "chain_id": 16661,
@@ -15,10 +15,10 @@
     "owner": "0xb0F086D0F9E5E33c97dc9Afe61Dad7165d5F981B",
     "cooldown_seconds": 21600,
     "max_rate_change_bps": 50,
-    "borrower_count": 3
+    "borrower_count": 4
   },
-  "publication_count": 3,
-  "attested_count": 0,
+  "publication_count": 4,
+  "attested_count": 1,
   "publications": [
     {
       "borrower_id": "brw_01hx9p3q7r",
@@ -79,6 +79,26 @@
       "block_number": 43139802,
       "explorer_url": "https://chainscan.0g.ai/tx/0xb5e2104362978c11324c0974b8cb6bdb964c586ac49b098870a821996469dbd1",
       "storage_explorer_url": "https://storagescan.0g.ai/tx/0x02fcb7cb2bec3a4fb188df97f186b4e772b4777b6f7cb5ec9475efec707dae12"
+    },
+    {
+      "borrower_id": "brw_01hx8k2m4n",
+      "name": "Meridian Components Ltd",
+      "score": "BBB",
+      "score_numeric": 727,
+      "confidence_interval": [
+        694,
+        760
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 921,
+      "attested": true,
+      "compute_attestation_ref": "0x31393064366461632d323538382d343432662d626430662d6339616365353639",
+      "storage_root_hash": "0x3bdd2a2e41972e955f2a103b5bf2fbdc6cb056e780c7062873823df375e239e6",
+      "published_at": "2026-08-31T14:17:17.000Z",
+      "tx_hash": "0xbae19503bc2a89ba59a9967739151568539a376cac4c2c369baa0bd1f7a51ac7",
+      "block_number": 43144203,
+      "explorer_url": "https://chainscan.0g.ai/tx/0xbae19503bc2a89ba59a9967739151568539a376cac4c2c369baa0bd1f7a51ac7",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0x3bdd2a2e41972e955f2a103b5bf2fbdc6cb056e780c7062873823df375e239e6"
     }
   ],
   "og_components": {

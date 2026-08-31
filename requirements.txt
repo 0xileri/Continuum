@@ -14,6 +14,12 @@ anthropic>=0.116,<2          # direct-API reasoning path; the 0G Compute path ne
 pandas>=2.2.3,<3
 numpy>=2.1,<3
 pyarrow>=18
+# Fallback parquet engine. pandas prefers pyarrow and falls back to this automatically, so it is
+# redundant on a normal machine — but pyarrow ships a compiled DLL that Windows Application Control
+# policies block, and when that happens the whole ingestion layer stops reading. fastparquet's
+# native dependency (cramjam) is not caught by the same policy, so keeping both means one blocked
+# binary degrades to a slower read rather than a dead pipeline.
+fastparquet>=2024.5
 pydantic>=2.10,<3
 fastapi>=0.115,<1
 uvicorn>=0.32,<1
