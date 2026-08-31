@@ -10,10 +10,11 @@
 //   node og-bridge/fund.mjs --amount 0.2
 //   node og-bridge/fund.mjs --amount 0.2 --provider 0xabc... --yes
 //
-// The ledger's real floor is the LedgerManager's on-chain MIN_ACCOUNT_BALANCE (0.1 0G on Galileo),
-// not the '3 0G' the docs suggest — that is a comfort recommendation, not an enforced minimum. This
-// reads the constant from the chain rather than hardcoding either number, so a change on 0G's side
-// surfaces as a clear error instead of a mystifying revert.
+// The ledger's real floor is the LedgerManager's on-chain MIN_ACCOUNT_BALANCE, and it DIFFERS BY
+// NETWORK: 0.1 0G on Galileo testnet, 3.0 0G on mainnet. The SDK hardcodes 3 and reports it as
+// "the contract requires" on both, which is wrong on testnet and right on mainnet. This reads the
+// constant from the chain instead of hardcoding either number, so the check is correct on both and
+// a change on 0G's side surfaces as a clear error rather than a mystifying revert.
 
 import { ethers } from 'ethers'
 import { createZGComputeNetworkBroker } from '@0gfoundation/0g-compute-ts-sdk'
@@ -103,7 +104,8 @@ async function main() {
     // --direct calls the same contract function the SDK calls — addLedger(string) payable, with
     // the amount as msg.value, exactly as LedgerProcessor does — skipping only that guard. It is
     // not a bypass of any on-chain rule: a value below the real MIN_ACCOUNT_BALANCE still reverts,
-    // and this script refuses it before sending. Use it when faucet funds are the constraint.
+    // and this script refuses it before sending. Useful on testnet, where the SDK's 3 0G is wrong;
+    // on mainnet the contract genuinely requires 3, so this flag changes nothing there.
     if (amount < 3 && arg('direct', false)) {
       console.log(
         `\n  creating ledger by calling addLedger() directly.\n` +

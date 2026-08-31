@@ -109,6 +109,33 @@ def _load_existing_proof() -> dict | None:
         return None
 
 
+def _load_scored(borrower_id: str):
+    """Rebuild a ``ScoreResult`` from what the engine already wrote to disk.
+
+    Used by ``--from-store``. The score, its feature record and its explanation artifact are all
+    plain JSON, so this path has no parquet dependency and no scorer to load — it publishes exactly
+    what was computed, rather than a fresh computation that might differ because the clock moved.
+
+    Publishing a stored score is not a lesser artifact: the payload carries its own
+    ``measurement_hash`` binding it to the feature record it was computed from, so a reader can
+    still verify the pair. What it does not do is prove the score is current, which is why the
+    trigger reason and ``as_of`` travel with it.
+    """
+    from continuum.scoring.aggregate import ScoreResult
+
+    history = store.load_scores(borrower_id)
+    if not history:
+        raise FileNotFoundError(
+            f"no scores on disk for {borrower_id} — run the engine first:\n"
+            f"    python -m continuum.orchestrator backfill --weeks 14"
+        )
+
+    payload = history[-1]
+    record = store.load_feature_record(borrower_id)
+    explanation = store.load_explanation(payload.explainability_ref) or {}
+    return ScoreResult(payload=payload, record=record, explanation=explanation)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--limit", type=int, default=5, help="How many borrowers to publish")
@@ -125,6 +152,14 @@ def main() -> int:
         "it independently (§7), and it is not overridable from here by design.",
     )
     parser.add_argument(
+        "--from-store",
+        action="store_true",
+        help="Publish the latest score already on disk instead of recomputing it. Separates "
+        "computation from publication: re-publishing after a chain outage, a failed transaction "
+        "or a registry redeploy should not require re-running the engine, and on a machine where "
+        "the parquet engine is unavailable it is the only path that works.",
+    )
+    parser.add_argument(
         "--allow-unattested",
         action="store_true",
         help="Publish even if the 0G Compute attestation did not verify. Off by default: an "
@@ -135,11 +170,21 @@ def main() -> int:
     if not preflight(args):
         return 1
 
-    from continuum.orchestrator import data_horizon, rescore
+    from continuum.orchestrator import data_horizon
 
     as_of = utc(datetime.fromisoformat(args.as_of)) if args.as_of else data_horizon()
-    model = aggregate.load_scorer()
-    raw = store.load_raw()
+
+    # The raw event tables are only needed to *recompute*. --from-store publishes what the engine
+    # already produced, so it deliberately never touches them — which is what makes it usable when
+    # the parquet engine is missing.
+    model = None
+    raw = None
+    if not args.from_store:
+        from continuum.orchestrator import rescore  # noqa: F401  (imported for its side-effect-free deps)
+
+        model = aggregate.load_scorer()
+        raw = store.load_raw()
+
     borrowers = [
         b
         for b in store.load_borrowers()
@@ -158,18 +203,23 @@ def main() -> int:
         documents = store.load_documents(bid)
 
         try:
-            # persist=False so the 0G writes are driven explicitly below rather than as a side
-            # effect of scoring. That keeps "what did this cost" answerable per borrower.
-            result, _ = rescore(
-                borrower,
-                raw,
-                as_of,
-                model=model,
-                documents=documents,
-                trigger_reason="scheduled_daily",
-                fresh_llm=True,
-                persist=False,
-            )
+            if args.from_store:
+                result = _load_scored(bid)
+            else:
+                from continuum.orchestrator import rescore
+
+                # persist=False so the 0G writes are driven explicitly below rather than as a side
+                # effect of scoring. That keeps "what did this cost" answerable per borrower.
+                result, _ = rescore(
+                    borrower,
+                    raw,
+                    as_of,
+                    model=model,
+                    documents=documents,
+                    trigger_reason="scheduled_daily",
+                    fresh_llm=True,
+                    persist=False,
+                )
         except Exception as exc:
             failures.append(f"{bid}: scoring failed — {exc}")
             print(f"{borrower['name'][:27]:<28}  SCORING FAILED: {exc}")

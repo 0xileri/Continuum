@@ -12,7 +12,16 @@
 import { ethers } from 'ethers'
 import { createZGComputeNetworkBroker } from '@0gfoundation/0g-compute-ts-sdk'
 import { Indexer } from '@0gfoundation/0g-storage-ts-sdk'
-import { NETWORKS, network } from './lib.mjs'
+import { CONTRACT_ADDRESSES } from '@0gfoundation/0g-compute-ts-sdk'
+import { network } from './lib.mjs'
+
+// LedgerManager per network — the contract whose MIN_ACCOUNT_BALANCE is the real ledger floor.
+// Taken from the SDK's own export rather than transcribed, so it cannot drift out of step with the
+// broker that actually talks to it.
+const LEDGER_MANAGER = {
+  mainnet: CONTRACT_ADDRESSES.mainnet.ledger,
+  testnet: CONTRACT_ADDRESSES.testnet.ledger,
+}
 
 const PASS = 'PASS'
 const WARN = 'WARN'
@@ -121,6 +130,29 @@ async function main() {
       )
     }
 
+    // The ledger minimum is NETWORK-DEPENDENT — 0.1 0G on Galileo, 3.0 0G on mainnet — so the
+    // suggested amount is read from the chain rather than hardcoded. An earlier version of this
+    // file printed testnet's 0.1 unconditionally, which on mainnet is advice to send a transaction
+    // that reverts.
+    let minLedger = 0.1
+    try {
+      const lm = new ethers.Contract(
+        LEDGER_MANAGER[netName] ?? LEDGER_MANAGER.mainnet,
+        ['function MIN_ACCOUNT_BALANCE() view returns (uint256)'],
+        wallet.provider
+      )
+      minLedger = Number(ethers.formatEther(await lm.MIN_ACCOUNT_BALANCE()))
+    } catch {
+      /* fall back to the conservative default below */
+    }
+    // Twice the minimum is a comfortable starting balance, but never suggest more than the
+    // wallet actually holds minus a gas reserve — advice that cannot be followed is worse than no
+    // advice, and on mainnet the minimum can be most of a modest balance.
+    const GAS_RESERVE = 0.25
+    const affordable = Number(ethers.formatEther(balance)) - GAS_RESERVE
+    const suggested = Math.min(minLedger * 2, Math.max(minLedger, affordable)).toFixed(2)
+    const canAfford = affordable >= minLedger
+
     try {
       const ledger = await broker.ledger.getLedger()
       const available = Number(ethers.formatEther(ledger?.availableBalance ?? ledger?.[1] ?? 0n))
@@ -128,14 +160,22 @@ async function main() {
         '0G Compute ledger',
         available > 0 ? PASS : FAIL,
         `${available.toFixed(4)} 0G available`,
-        available > 0 ? '' : 'node og-bridge/fund.mjs --amount 0.2 --yes'
+        available > 0 ? '' : `node og-bridge/fund.mjs --amount ${suggested} --yes`
       )
     } catch {
       check(
         '0G Compute ledger',
-        FAIL,
-        'no ledger account',
-        'node og-bridge/fund.mjs --amount 0.2 --yes   (on-chain minimum is 0.1 0G)'
+        canAfford ? FAIL : WARN,
+        canAfford
+          ? 'no ledger account'
+          : `no ledger account, and the wallet cannot reach this network's ${minLedger} 0G ` +
+            `minimum (holds ${Number(ethers.formatEther(balance)).toFixed(2)} 0G)`,
+        canAfford
+          ? `node og-bridge/fund.mjs --amount ${suggested} --yes   ` +
+            `(on-chain minimum on this network is ${minLedger} 0G)`
+          : 'skip attestation: Storage + Chain cost ~0.03 0G and still give a live registry with ' +
+            'real publish transactions. Scores publish with attestation.type="none", which every ' +
+            'payload states plainly.'
       )
     }
   } catch (err) {
@@ -149,14 +189,23 @@ async function main() {
       'ContinuumScoreRegistry',
       FAIL,
       'CONTINUUM_REGISTRY_ADDRESS not set',
-      `cd contracts && forge script script/Deploy.s.sol:Deploy --rpc-url ${net.rpc} --broadcast`
+      'node og-bridge/deploy.mjs --yes'
     )
   } else {
     try {
       const code = await wallet.provider.getCode(registry)
       if (code === '0x') {
-        check('ContinuumScoreRegistry', FAIL, `no contract at ${registry} on ${net.name}`,
-          'deployed to a different network? check CONTINUUM_OG_NETWORK')
+        const isSelf = registry.toLowerCase() === wallet.address.toLowerCase()
+        check(
+          'ContinuumScoreRegistry',
+          FAIL,
+          isSelf
+            ? `CONTINUUM_REGISTRY_ADDRESS is set to your own wallet address, not a contract`
+            : `no contract at ${registry} on ${net.name}`,
+          isSelf
+            ? 'clear CONTINUUM_REGISTRY_ADDRESS in .env, then: node og-bridge/deploy.mjs --yes'
+            : 'deployed to a different network? check CONTINUUM_OG_NETWORK'
+        )
       } else {
         const c = new ethers.Contract(
           registry,
@@ -170,7 +219,7 @@ async function main() {
           'scorer authorised',
           authorized ? PASS : FAIL,
           authorized ? wallet.address : `${wallet.address} is not authorised`,
-          `CONTINUUM_SCORER_ADDRESS=${wallet.address} forge script script/Deploy.s.sol:AuthorizeScorer --rpc-url ${net.rpc} --broadcast`
+          `node og-bridge/deploy.mjs --authorize ${wallet.address} --yes`
         )
         console.log(`         explorer: ${net.explorer}/address/${registry}`)
       }

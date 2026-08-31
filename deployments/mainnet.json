@@ -1,0 +1,14 @@
+{
+  "network": "0g-chain-mainnet",
+  "chain_id": 16661,
+  "address": "0x96406Be24513D9eCDE067a8CBa27eEeb3e1A7b3C",
+  "tx_hash": "0xd1714e03568da30c474a26eb28a404f037d824297988e534303356ddb419c893",
+  "block_number": 43138713,
+  "explorer_url": "https://chainscan.0g.ai/address/0x96406Be24513D9eCDE067a8CBa27eEeb3e1A7b3C",
+  "contract": "ContinuumScoreRegistry",
+  "deployer": "0xb0F086D0F9E5E33c97dc9Afe61Dad7165d5F981B",
+  "cooldown_seconds": 21600,
+  "max_rate_change_bps": 50,
+  "deployed_at": "2026-08-31T12:48:20.003Z",
+  "authorized_scorer": "0xb0F086D0F9E5E33c97dc9Afe61Dad7165d5F981B"
+}

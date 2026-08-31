@@ -298,17 +298,28 @@ honest failure is a visible gap, never a plausible-looking placeholder.
 
 Discovered on the live testnet run, and it is the binding constraint on attestation:
 
-- The SDK refuses to *create* a ledger below **3 0G** — a client-side guard whose error text claims
-  "the contract requires a minimum of 3 0G". That is wrong: `LedgerManager.MIN_ACCOUNT_BALANCE` read
-  from the chain is **0.1 0G**. `fund.mjs --direct` calls the same `addLedger(string) payable` the
-  SDK calls, skipping only the incorrect guard. It still refuses anything below the real on-chain
-  minimum.
+- The SDK refuses to *create* a ledger below **3 0G**, claiming "the contract requires" it. **That
+  is network-dependent, and the SDK states it as universal.** `LedgerManager.MIN_ACCOUNT_BALANCE`
+  read from the chain is **0.1 0G on Galileo testnet** but **3.0 0G on mainnet**. So the guard is
+  wrong on testnet and correct on mainnet. `fund.mjs --direct` skips it and still refuses anything
+  below the *real* on-chain minimum, which it reads from the chain rather than assuming — that is
+  why the same flag is safe on both networks and useful only on one.
 - The **provider** separately requires **1.0 0G locked** in its sub-account, enforced server-side:
   `insufficient balance: your locked balance is 0.125 0G, but the required minimum is 1.0 0G`. There
   is no way around this one, and none should be sought — it is the provider's own policy.
 
-So a wallet needs roughly **1.2 0G** for attested scoring, not the 3–4 the docs imply, and not the
-0.1 the contract alone would allow.
+Budget, per network:
+
+| | testnet | mainnet |
+|---|---|---|
+| ledger minimum (on-chain) | 0.1 0G | **3.0 0G** |
+| provider sub-account minimum | 1.0 0G | 1.0 0G (assumed same; provider-side) |
+| deploy + a handful of publishes | ~0.02 0G | ~0.02 0G |
+| **attested total** | **~1.2 0G** | **~3.1 0G** |
+| **unattested (Storage + Chain only)** | ~0.03 0G | ~0.03 0G |
+
+Mainnet has **12 Compute providers, all with acknowledged TEE signers** (testnet has 2), and 4
+storage indexer nodes.
 
 ---
 

@@ -4,6 +4,11 @@ Continuous AI credit scoring for the **invoice-financing** vertical of RWA lendi
 re-scored from live financial signal instead of once at origination, and the score is published on
 0G Chain in a form a lending pool can consume directly.
 
+**Live on 0G Chain mainnet** — [`0x96406Be24513D9eCDE067a8CBa27eEeb3e1A7b3C`](https://chainscan.0g.ai/address/0x96406Be24513D9eCDE067a8CBa27eEeb3e1A7b3C)
+(chain 16661, deployed in block 43138713). Score-publish transactions and the on-chain
+parameters are enumerated in [`deployments/integration_proof_mainnet.json`](deployments/integration_proof_mainnet.json),
+which is generated from the registry's own `ScorePublished` events rather than from a build log.
+
 Built for **0G Bridge by AKINDO — Wave 3**. Scope, decisions and open questions live in
 [`docs/wave3-brief.pdf`](docs/wave3-brief.pdf) (the brief) and [`WAVE3.md`](WAVE3.md) (what this build
 assumed, reduced or left open).
@@ -68,7 +73,7 @@ bytecode rather than in the operator's own off-chain code.
 |---|---|---|
 | **0G Compute** | Runs the document-reasoning call inside a TEE; `processResponse` verifies the provider's signature before the flags move a score | `og-bridge/compute.mjs`, `continuum/og/compute.py` |
 | **0G Storage** | Canonical, tamper-evident copy of every Borrower Feature Record; only the merkle root goes on-chain | `og-bridge/storage.mjs`, `continuum/og/storage.py` |
-| **0G Chain** | `ContinuumScoreRegistry` — the published score, plus §4's cooldown and §5.4's circuit breaker in bytecode | `contracts/src/ContinuumScoreRegistry.sol` |
+| **0G Chain** | `ContinuumScoreRegistry` — the published score, plus §4's cooldown and §5.4's circuit breaker in bytecode. Live at [`0x96406Be2…`](https://chainscan.0g.ai/address/0x96406Be24513D9eCDE067a8CBa27eEeb3e1A7b3C) | `contracts/src/ContinuumScoreRegistry.sol` |
 
 ---
 

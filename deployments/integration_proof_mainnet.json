@@ -1,0 +1,90 @@
+{
+  "project": "Continuum",
+  "generated_at": "2026-08-31T13:08:38.203Z",
+  "source": "derived from on-chain ScorePublished events, not from the publish script log",
+  "network": "0g-chain-mainnet",
+  "chain_id": 16661,
+  "contract": "ContinuumScoreRegistry",
+  "contract_address": "0x96406Be24513D9eCDE067a8CBa27eEeb3e1A7b3C",
+  "contract_explorer_url": "https://chainscan.0g.ai/address/0x96406Be24513D9eCDE067a8CBa27eEeb3e1A7b3C",
+  "deploy_tx": "0xd1714e03568da30c474a26eb28a404f037d824297988e534303356ddb419c893",
+  "deploy_tx_explorer_url": "https://chainscan.0g.ai/tx/0xd1714e03568da30c474a26eb28a404f037d824297988e534303356ddb419c893",
+  "deploy_block": 43138713,
+  "storage_explorer": "https://storagescan.0g.ai",
+  "on_chain_parameters": {
+    "owner": "0xb0F086D0F9E5E33c97dc9Afe61Dad7165d5F981B",
+    "cooldown_seconds": 21600,
+    "max_rate_change_bps": 50,
+    "borrower_count": 3
+  },
+  "publication_count": 3,
+  "attested_count": 0,
+  "publications": [
+    {
+      "borrower_id": "brw_01hx9p3q7r",
+      "name": "Talbot Fresh Produce",
+      "score": "BBB",
+      "score_numeric": 700,
+      "confidence_interval": [
+        663,
+        737
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 1032,
+      "attested": false,
+      "compute_attestation_ref": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "storage_root_hash": "0xcfff6acf85b41f15a296535786ed954d8fcfd97fd10627dc9ae6e51f1ce172c8",
+      "published_at": "2026-08-31T13:04:12.000Z",
+      "tx_hash": "0x1334e603abe5903a1ae3747383b17399a2af4a338697ed09c41166dff0784024",
+      "block_number": 43139701,
+      "explorer_url": "https://chainscan.0g.ai/tx/0x1334e603abe5903a1ae3747383b17399a2af4a338697ed09c41166dff0784024",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0xcfff6acf85b41f15a296535786ed954d8fcfd97fd10627dc9ae6e51f1ce172c8"
+    },
+    {
+      "borrower_id": "brw_01hxa4s8t2",
+      "name": "Ravensworth Medical Supply",
+      "score": "BBB-",
+      "score_numeric": 685,
+      "confidence_interval": [
+        648,
+        722
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 1085,
+      "attested": false,
+      "compute_attestation_ref": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "storage_root_hash": "0xadd077326f02ff97ff14fce58e11581ee17779e64edaa1db0d12769be9a82217",
+      "published_at": "2026-08-31T13:04:54.000Z",
+      "tx_hash": "0x27a3aac1fbc77e91b4473a448eaf80e016cd45544b0768a389bed7aed0f0bc0b",
+      "block_number": 43139745,
+      "explorer_url": "https://chainscan.0g.ai/tx/0x27a3aac1fbc77e91b4473a448eaf80e016cd45544b0768a389bed7aed0f0bc0b",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0xadd077326f02ff97ff14fce58e11581ee17779e64edaa1db0d12769be9a82217"
+    },
+    {
+      "borrower_id": "brw_01hxb6u9v5",
+      "name": "Ardent Print & Packaging",
+      "score": "BBB",
+      "score_numeric": 727,
+      "confidence_interval": [
+        690,
+        765
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 935,
+      "attested": false,
+      "compute_attestation_ref": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "storage_root_hash": "0x02fcb7cb2bec3a4fb188df97f186b4e772b4777b6f7cb5ec9475efec707dae12",
+      "published_at": "2026-08-31T13:05:52.000Z",
+      "tx_hash": "0xb5e2104362978c11324c0974b8cb6bdb964c586ac49b098870a821996469dbd1",
+      "block_number": 43139802,
+      "explorer_url": "https://chainscan.0g.ai/tx/0xb5e2104362978c11324c0974b8cb6bdb964c586ac49b098870a821996469dbd1",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0x02fcb7cb2bec3a4fb188df97f186b4e772b4777b6f7cb5ec9475efec707dae12"
+    }
+  ],
+  "og_components": {
+    "0g-chain": "ContinuumScoreRegistry — score registry enforcing the §4 cooldown (with its boundary-crossing-downgrade override) and the §5.4 ±50bps circuit breaker in bytecode",
+    "0g-storage": "Borrower Feature Records, referenced on-chain by merkle root only — the payload never carries the raw record (§5.3)",
+    "0g-compute": "document-reasoning call, TEE-signed and broker-verified (§5.2). See scope_note."
+  },
+  "scope_note": "0G Compute serves inference against registered providers and does not execute arbitrary jobs, so §5.2's stated fallback applies: the reasoning call runs on 0G Compute and the aggregation arithmetic runs off-chain, bound to its inputs by measurement_hash. Flagged, not mocked. Publications with attested=false were produced without a funded Compute ledger and say so in their own payload rather than implying an attestation they lack."
+}
