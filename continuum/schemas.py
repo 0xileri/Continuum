@@ -176,6 +176,18 @@ class BorrowerFeatureRecord(BaseModel):
     """EXT: per-feed decayed freshness in [0,1]. §6 requires a visible per-borrower staleness
     flag; the aggregate data_quality_score alone can't show WHICH feed went dark."""
 
+    document_ids_seen: list[str] = Field(default_factory=list)
+    """EXT: every document the reasoning agent was shown when this score was computed.
+
+    Recorded rather than inferred, because "has this document been read?" cannot be answered from
+    its own date. A covenant certificate dated the 1st that arrives on the 15th is new information
+    on the 15th, but a date comparison against the last scoring time buries it — permanently,
+    since it only gets older. Real document feeds backdate constantly.
+
+    It is also the provenance answer to "which documents produced this score?", which
+    ``llm_flags.evidence_refs`` only partly gives: that lists the documents supporting a *raised*
+    flag, not the ones read and dismissed."""
+
     compute_attestation: "Attestation | None" = None
     """EXT: the 0G Compute attestation returned with this record's ``llm_flags``.
 

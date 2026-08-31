@@ -4,7 +4,11 @@ import { fmtInt } from '../format.js'
 // request — both because lenders will demand it and because it's your best defense if a borrower
 // disputes a downgrade."
 //
-// ASSUMPTIONS #1 records that the numbers come from LightGBM's native TreeSHAP rather than the
+// Wave 3 note: with the §5.1 weighted scorer these contributions are exact by construction —
+// weight x (normalised - 0.5), summing to the composite minus its neutral point — rather than
+// a TreeSHAP approximation. The header row carries a _units key so the panel never mislabels
+// one scorer's attribution as the other's.
+// ASSUMPTIONS #1 records that on the trained-model path the numbers come from TreeSHAP rather than the
 // `shap` package, which drops a build dependency and means this component draws the waterfall
 // itself. Contributions are in log-odds, the space where they sum exactly to the prediction — so
 // the bars are comparable to each other and to the base term, which a probability-space rescaling
@@ -95,9 +99,8 @@ export default function ShapWaterfall({ attribution, limit = 10 }) {
         </tbody>
       </table>
       <p className="note dim" style={{ marginTop: 10, marginBottom: 0 }}>
-        Red raises modelled probability of deterioration, green lowers it. Exact TreeSHAP from the
-        booster itself (ASSUMPTIONS #1) — the contributions plus the base term reconstruct the
-        prediction exactly, so this is the arithmetic, not an approximation of it.
+        Red raises modelled risk, green lowers it. The contributions plus the base term reconstruct
+        the score exactly, so this is the arithmetic itself rather than an approximation of it.
       </p>
     </>
   )

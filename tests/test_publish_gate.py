@@ -251,3 +251,122 @@ def test_an_attestation_upgrade_publishes_during_a_cooldown():
         attested=True,
     )
     assert ok and "attestation upgraded" in reason
+
+
+# --------------------------------------------------------------------------------------
+# Document-arrival trigger (§7 part 2)
+# --------------------------------------------------------------------------------------
+
+
+def _doc(doc_id, created):
+    # created_at is an ISO string on the wire, as the generator writes it and llm_agent parses it.
+    return {
+        "doc_id": doc_id,
+        "borrower_id": "brw_test0001",
+        "doc_type": "covenant_certificate",
+        "title": "t",
+        "body": "b",
+        "created_at": created.isoformat(),
+    }
+
+
+def test_a_backdated_document_still_counts_as_new(monkeypatch, tmp_path):
+    """The bug this guards is silent and permanent.
+
+    Document feeds backdate: a covenant certificate dated the 1st routinely arrives on the 15th.
+    The old test — "created_at after the last scoring time" — calls that document old on the day it
+    lands, and keeps calling it old forever, because the comparison only ever moves against it. A
+    breach notice could sit in the feed unread indefinitely.
+    """
+    from continuum import orchestrator
+    from continuum.ingestion import store
+    from continuum.schemas import BorrowerFeatureRecord, BorrowerFeatures, LLMFlags
+
+    arrived = _doc("doc_late", T0 - timedelta(days=9))
+    already = _doc("doc_old", T0 - timedelta(days=30))
+
+    record = BorrowerFeatureRecord(
+        borrower_id="brw_test0001",
+        as_of=T0 - timedelta(days=1),
+        source_freshness={},
+        features=BorrowerFeatures(
+            revenue_30d=1,
+            revenue_trend_90d=0,
+            days_sales_outstanding=45,
+            payer_concentration_top1_pct=0.4,
+            on_time_repayment_rate_180d=0.9,
+            days_since_last_late_payment=90,
+        ),
+        llm_flags=LLMFlags(
+            covenant_breach=False, adverse_news_detected=False, confidence=0.5, evidence_refs=[]
+        ),
+        data_quality_score=0.9,
+        # The last score read only the old document, even though the late one is dated earlier
+        # than the score itself.
+        document_ids_seen=["doc_old"],
+    )
+    monkeypatch.setattr(store, "load_feature_record", lambda _bid: record)
+
+    fresh = orchestrator.new_document_since_last_score(
+        "brw_test0001", [already, arrived], T0
+    )
+    assert fresh is not None and fresh["doc_id"] == "doc_late"
+
+
+def test_an_already_read_document_does_not_retrigger(monkeypatch):
+    """Re-reading an unchanged file would spend a model call to reproduce a known answer."""
+    from continuum import orchestrator
+    from continuum.ingestion import store
+    from continuum.schemas import BorrowerFeatureRecord, BorrowerFeatures, LLMFlags
+
+    doc = _doc("doc_seen", T0 - timedelta(days=2))
+    record = BorrowerFeatureRecord(
+        borrower_id="brw_test0001",
+        as_of=T0 - timedelta(days=1),
+        source_freshness={},
+        features=BorrowerFeatures(
+            revenue_30d=1,
+            revenue_trend_90d=0,
+            days_sales_outstanding=45,
+            payer_concentration_top1_pct=0.4,
+            on_time_repayment_rate_180d=0.9,
+            days_since_last_late_payment=90,
+        ),
+        llm_flags=LLMFlags(
+            covenant_breach=False, adverse_news_detected=False, confidence=0.5, evidence_refs=[]
+        ),
+        data_quality_score=0.9,
+        document_ids_seen=["doc_seen"],
+    )
+    monkeypatch.setattr(store, "load_feature_record", lambda _bid: record)
+    assert orchestrator.new_document_since_last_score("brw_test0001", [doc], T0) is None
+
+
+def test_records_without_the_field_fall_back_to_the_date_heuristic(monkeypatch):
+    """Old records predate document_ids_seen. The fallback must fail toward 'nothing new' rather
+    than toward a false trigger, since this path spends a model call."""
+    from continuum import orchestrator
+    from continuum.ingestion import store
+    from continuum.schemas import BorrowerFeatureRecord, BorrowerFeatures, LLMFlags
+
+    doc = _doc("doc_old", T0 - timedelta(days=30))
+    record = BorrowerFeatureRecord(
+        borrower_id="brw_test0001",
+        as_of=T0 - timedelta(days=1),
+        source_freshness={},
+        features=BorrowerFeatures(
+            revenue_30d=1,
+            revenue_trend_90d=0,
+            days_sales_outstanding=45,
+            payer_concentration_top1_pct=0.4,
+            on_time_repayment_rate_180d=0.9,
+            days_since_last_late_payment=90,
+        ),
+        llm_flags=LLMFlags(
+            covenant_breach=False, adverse_news_detected=False, confidence=0.5, evidence_refs=[]
+        ),
+        data_quality_score=0.9,
+        document_ids_seen=[],
+    )
+    monkeypatch.setattr(store, "load_feature_record", lambda _bid: record)
+    assert orchestrator.new_document_since_last_score("brw_test0001", [doc], T0) is None

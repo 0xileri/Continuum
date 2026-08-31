@@ -135,6 +135,10 @@ def build_feature_record(
         llm_flags=llm_flags,
         data_quality_score=dq,
         feed_freshness_detail=dq_detail,
+        # Every document the agent was shown, not only the ones it cited. See the field's
+        # docstring: this is what makes "has this been read?" answerable without guessing from
+        # a date the publisher does not control.
+        document_ids_seen=[d["doc_id"] for d in llm_agent.visible_documents(documents, as_of)],
         compute_attestation=compute_attestation,
         borrower_name=borrower.get("name", ""),
         sector=borrower.get("sector", ""),

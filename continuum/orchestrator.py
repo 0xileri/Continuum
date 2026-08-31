@@ -206,7 +206,25 @@ def new_document_since_last_score(
         return None
     if prior is None:
         return visible[0]
-    seen = {d["doc_id"] for d in llm_agent.visible_documents(documents, prior.as_of)}
+
+    # What the last score actually read, when the record says so.
+    #
+    # The obvious test — "dated after the last scoring time" — is wrong, and wrong in the
+    # direction that loses information. Document feeds backdate: a covenant certificate dated the
+    # 1st routinely arrives on the 15th, and against a last-scored timestamp of the 10th it is
+    # already "old" on the day it lands. Worse, it stays old forever, because the comparison only
+    # moves against it. A breach notice could sit in the feed permanently unread.
+    #
+    # So the question is answered from the record of what was shown to the agent, which the
+    # publisher controls, rather than inferred from a date the originator controls.
+    if prior.document_ids_seen:
+        seen = set(prior.document_ids_seen)
+    else:
+        # Records written before document_ids_seen existed. The date heuristic is the best
+        # available for those, and it degrades to "no new documents" rather than to a false
+        # trigger — the safe direction for a path that spends a model call.
+        seen = {d["doc_id"] for d in llm_agent.visible_documents(documents, prior.as_of)}
+
     fresh = [d for d in visible if d["doc_id"] not in seen]
     return fresh[0] if fresh else None
 
