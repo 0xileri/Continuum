@@ -14,11 +14,18 @@
   --dim: #697C86;
 
   /* Semantic only. On this product colour is data: these mean a borrower is deteriorating, not
-     that a designer wanted variety. Never use them decoratively. */
-  --strong: #4BBF8A;
+     that a designer wanted variety. Never use them decoratively.
+
+     The ramp starts at the brand trace and warms as it descends, and — this is the part that was
+     wrong before — SATURATION RISES WITH SEVERITY. `watch` covers BB/BB-/B, which is the modal
+     band in a distressed cohort, so a saturated amber there made the whole surface shout about its
+     most ordinary borrowers while the genuinely failing ones had nothing louder left to say. The
+     mid-tones are muted ochre and clay now; full-intensity vermilion is reserved for the bottom,
+     where it means something. */
+  --strong: #5FC9A8;
   --good: #6FD3C7;
-  --watch: #E0A340;
-  --weak: #DE8347;
+  --watch: #C9A46A;
+  --weak: #D0805A;
   --bad: #E2603F;
   --neutral: #7C8D96;
 
@@ -26,7 +33,7 @@
   --accent: #6FD3C7;
   --accent-soft: rgba(111, 211, 199, 0.13);
   --accent-line: rgba(111, 211, 199, 0.38);
-  --band: rgba(111, 211, 199, 0.17);
+  --band: rgba(111, 211, 199, 0.26);
 
   --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --sans: Archivo, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
@@ -457,8 +464,11 @@ button.ghost.active {
   margin-bottom: 16px;
 }
 
+/* The trust banner is chrome, not a severity reading — it says what the scorer is, which is true
+   of every score on the page rather than alarming about one. It borrowed --watch and so read as a
+   warning about the borrower currently selected. */
 .callout.trust {
-  border-left-color: var(--watch);
+  border-left-color: var(--accent);
 }
 
 .callout.error {

@@ -3,7 +3,7 @@ import { fmtSigned, gradeTone } from '../format.js'
 // Sparkline of the last 40 recorded scores. Deliberately unlabelled and unscaled against the
 // others: it says "this borrower has been moving" or "this borrower has been flat", which is the
 // only question the list view has to answer before the reader clicks through.
-function Spark({ points, width = 62, height = 18 }) {
+function Spark({ points, tone = 'neutral', width = 62, height = 18 }) {
   if (!points || points.length < 2) return <svg width={width} height={height} />
   const values = points.map((p) => p.score_numeric)
   const lo = Math.min(...values)
@@ -16,15 +16,21 @@ function Spark({ points, width = 62, height = 18 }) {
       return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)},${y.toFixed(1)}`
     })
     .join(' ')
-  const rising = values[values.length - 1] >= values[0]
+  // Coloured by the borrower's grade, not by whether the line happens to end lower than it
+  // started. The binary version painted every mild drift full vermilion — and in a cohort that
+  // mostly drifts down, that meant the roster screamed about its most ordinary borrowers and had
+  // nothing louder left for the ones actually failing. Matching the grade chip beside it also
+  // means the two never disagree about how worried to be.
   return (
     <svg width={width} height={height}>
       <path
         d={d}
         fill="none"
-        stroke={rising ? 'var(--strong)' : 'var(--bad)'}
-        strokeWidth="1.3"
-        opacity="0.85"
+        stroke={`var(--${tone})`}
+        strokeWidth="1.4"
+        opacity="0.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   )
@@ -56,7 +62,7 @@ export default function Roster({ borrowers, selectedId, onSelect }) {
             </div>
             <div className="right">
               <span className={`grade ${gradeTone(latest?.score)}`}>{latest?.score ?? '—'}</span>
-              <Spark points={b.spark} />
+              <Spark points={b.spark} tone={gradeTone(latest?.score)} />
               <span className="dim mono" style={{ fontSize: 10.5 }}>
                 {latest ? latest.score_numeric : '—'}
                 {latest?.prior_score_numeric != null && latest.score_delta !== 0 && (
