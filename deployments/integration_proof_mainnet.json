@@ -1,6 +1,6 @@
 {
   "project": "Continuum",
-  "generated_at": "2026-08-31T21:17:58.054Z",
+  "generated_at": "2026-08-31T21:33:32.714Z",
   "source": "derived from on-chain ScorePublished events, not from the publish script log",
   "network": "0g-chain-mainnet",
   "chain_id": 16661,
@@ -15,10 +15,10 @@
     "owner": "0xb0F086D0F9E5E33c97dc9Afe61Dad7165d5F981B",
     "cooldown_seconds": 21600,
     "max_rate_change_bps": 50,
-    "borrower_count": 5
+    "borrower_count": 12
   },
-  "publication_count": 7,
-  "attested_count": 4,
+  "publication_count": 15,
+  "attested_count": 12,
   "publications": [
     {
       "borrower_id": "brw_01hx9p3q7r",
@@ -159,6 +159,166 @@
       "block_number": 43170197,
       "explorer_url": "https://chainscan.0g.ai/tx/0x5cf9c75baa31117b64270d915522947d2afa5be4a1497fa5b443bdc7378bbc67",
       "storage_explorer_url": "https://storagescan.0g.ai/tx/0xa5c6c28a9a2601298a450807fcde84b20d8304676ae46e8d47f4301ee4c93e47"
+    },
+    {
+      "borrower_id": "brw_01hxc7w2x8",
+      "name": "Pennington Textiles",
+      "score": "BB-",
+      "score_numeric": 587,
+      "confidence_interval": [
+        553,
+        621
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 1485,
+      "attested": true,
+      "compute_attestation_ref": "0x33633535626463352d323733352d343836392d613635382d6332366537646437",
+      "storage_root_hash": "0x9cdc8b53c8ca89b9d8df0f4bed9cb18fcf582ac614f9ece89face1d02a1e5ef4",
+      "published_at": "2026-08-31T21:24:37.000Z",
+      "tx_hash": "0xf3d452c4f3027e68bf76ced4bf90088aa6097e8434af19b53d5cb77116ea90ab",
+      "block_number": 43170653,
+      "explorer_url": "https://chainscan.0g.ai/tx/0xf3d452c4f3027e68bf76ced4bf90088aa6097e8434af19b53d5cb77116ea90ab",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0x9cdc8b53c8ca89b9d8df0f4bed9cb18fcf582ac614f9ece89face1d02a1e5ef4"
+    },
+    {
+      "borrower_id": "brw_01hxd8y3z1",
+      "name": "Kingsley Civil Works",
+      "score": "B",
+      "score_numeric": 538,
+      "confidence_interval": [
+        500,
+        577
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 2507,
+      "attested": true,
+      "compute_attestation_ref": "0x30646333303665632d633661342d343461392d623130622d3533373131306232",
+      "storage_root_hash": "0xefb42611034aeebb2b6b5f00f795f1aad7eac15bfa8ee1320120fbadbe8b88cf",
+      "published_at": "2026-08-31T21:25:47.000Z",
+      "tx_hash": "0x4db3e38cfea71fbf53384ba219be7f54344a6da696d16bba42c9bbdd886d90c3",
+      "block_number": 43170722,
+      "explorer_url": "https://chainscan.0g.ai/tx/0x4db3e38cfea71fbf53384ba219be7f54344a6da696d16bba42c9bbdd886d90c3",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0xefb42611034aeebb2b6b5f00f795f1aad7eac15bfa8ee1320120fbadbe8b88cf"
+    },
+    {
+      "borrower_id": "brw_01hxe9a4b6",
+      "name": "Selwyn Transport Group",
+      "score": "BBB-",
+      "score_numeric": 670,
+      "confidence_interval": [
+        637,
+        704
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 1125,
+      "attested": true,
+      "compute_attestation_ref": "0x33343438333863342d303535372d343836312d386366652d3739373562383239",
+      "storage_root_hash": "0x92ac52167949e0895af73497250e5f1e5199f67657e8702d9a72298166aefe54",
+      "published_at": "2026-08-31T21:26:39.000Z",
+      "tx_hash": "0xe698def745224244cfb7c6baf1a8b1d424a01fdad2481cb3cef6ef54c1b15944",
+      "block_number": 43170776,
+      "explorer_url": "https://chainscan.0g.ai/tx/0xe698def745224244cfb7c6baf1a8b1d424a01fdad2481cb3cef6ef54c1b15944",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0x92ac52167949e0895af73497250e5f1e5199f67657e8702d9a72298166aefe54"
+    },
+    {
+      "borrower_id": "brw_01hxf2c5d9",
+      "name": "Halloway Interiors",
+      "score": "CCC",
+      "score_numeric": 464,
+      "confidence_interval": [
+        435,
+        493
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 3650,
+      "attested": true,
+      "compute_attestation_ref": "0x39313935356333652d373561372d343565322d383836632d3661653235346232",
+      "storage_root_hash": "0xb161b74aa04635eaf71a80b36ab076693e76c9893e3366718fdb84e16c0c6d0b",
+      "published_at": "2026-08-31T21:27:49.000Z",
+      "tx_hash": "0xea924d6efd1f2feb4c92ed3b2b8c82aca800fbb39a9818e78505c82d07be5188",
+      "block_number": 43170848,
+      "explorer_url": "https://chainscan.0g.ai/tx/0xea924d6efd1f2feb4c92ed3b2b8c82aca800fbb39a9818e78505c82d07be5188",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0xb161b74aa04635eaf71a80b36ab076693e76c9893e3366718fdb84e16c0c6d0b"
+    },
+    {
+      "borrower_id": "brw_01hxg3e6f4",
+      "name": "Brightwater Seafood Co",
+      "score": "CCC",
+      "score_numeric": 441,
+      "confidence_interval": [
+        397,
+        485
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 3650,
+      "attested": true,
+      "compute_attestation_ref": "0x30313036613863642d613861342d346237652d613138362d6633666630326637",
+      "storage_root_hash": "0x8cfa042f4ef10105ad6858b5a91150cfb94e1b6ea36035eeb8ef89fb08f4192c",
+      "published_at": "2026-08-31T21:29:00.000Z",
+      "tx_hash": "0xa25cc57c440777906b517907bbc4e9a1034f3a5297475e18d256642fa63f91d3",
+      "block_number": 43170924,
+      "explorer_url": "https://chainscan.0g.ai/tx/0xa25cc57c440777906b517907bbc4e9a1034f3a5297475e18d256642fa63f91d3",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0x8cfa042f4ef10105ad6858b5a91150cfb94e1b6ea36035eeb8ef89fb08f4192c"
+    },
+    {
+      "borrower_id": "brw_01hxh4g7h2",
+      "name": "Copperfield Engineering",
+      "score": "BBB-",
+      "score_numeric": 653,
+      "confidence_interval": [
+        619,
+        687
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 1228,
+      "attested": true,
+      "compute_attestation_ref": "0x35313030306438662d336532312d346135332d623864352d3439393335633161",
+      "storage_root_hash": "0x48870ab5bcf4b354b42d18b378fd467728b7cabfdb17fa7c84a527cb92f140de",
+      "published_at": "2026-08-31T21:30:10.000Z",
+      "tx_hash": "0x24066ef3df08d5238df8100ff651741fe96073415109de79259852d6a88d5c31",
+      "block_number": 43170997,
+      "explorer_url": "https://chainscan.0g.ai/tx/0x24066ef3df08d5238df8100ff651741fe96073415109de79259852d6a88d5c31",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0x48870ab5bcf4b354b42d18b378fd467728b7cabfdb17fa7c84a527cb92f140de"
+    },
+    {
+      "borrower_id": "brw_01hxj5i8k7",
+      "name": "Lowgate Renewables",
+      "score": "BBB",
+      "score_numeric": 721,
+      "confidence_interval": [
+        686,
+        755
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 950,
+      "attested": true,
+      "compute_attestation_ref": "0x38613034646132612d623235312d346462362d626337382d6137613965663635",
+      "storage_root_hash": "0x803aafe76a2a544d4322a872c5fcf3c954036e2c224b82696ecb0369d922ef34",
+      "published_at": "2026-08-31T21:31:17.000Z",
+      "tx_hash": "0xabfeedae30fc8e922d604223665051dd8cacdf26c50250ca768caddbe308517f",
+      "block_number": 43171068,
+      "explorer_url": "https://chainscan.0g.ai/tx/0xabfeedae30fc8e922d604223665051dd8cacdf26c50250ca768caddbe308517f",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0x803aafe76a2a544d4322a872c5fcf3c954036e2c224b82696ecb0369d922ef34"
+    },
+    {
+      "borrower_id": "brw_01hxk6j9m3",
+      "name": "Fenwick Industrial Spares",
+      "score": "BB-",
+      "score_numeric": 597,
+      "confidence_interval": [
+        546,
+        647
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 1850,
+      "attested": true,
+      "compute_attestation_ref": "0x38356539366531362d663366612d343031392d383765342d6566643935316237",
+      "storage_root_hash": "0x59237097001c28e9f521184bb2c074bc8513bc64a7c2fa2c70a07627427dd273",
+      "published_at": "2026-08-31T21:32:31.000Z",
+      "tx_hash": "0xff14b723156c688833103ae591cb28f6105cf9f08fc9b7455beaa2da71f2bf91",
+      "block_number": 43171141,
+      "explorer_url": "https://chainscan.0g.ai/tx/0xff14b723156c688833103ae591cb28f6105cf9f08fc9b7455beaa2da71f2bf91",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0x59237097001c28e9f521184bb2c074bc8513bc64a7c2fa2c70a07627427dd273"
     }
   ],
   "og_components": {
