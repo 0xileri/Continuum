@@ -519,7 +519,26 @@ details.doc-row summary {
 
 .chart-wrap {
   width: 100%;
-  overflow-x: auto;
+  /* The svg scales via viewBox now, so there is nothing to scroll past. Kept as a guard for
+     narrow containers where the axis labels would otherwise clip. */
+  overflow-x: hidden;
+}
+
+/* Height follows the viewBox ratio rather than staying fixed. With a fixed height the scaled-down
+   chart letterboxed itself, leaving a band of dead space above and below the trace on narrow
+   screens. */
+.chart-wrap svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* The axis and grade labels are sized for the 860-unit coordinate system, so they shrink with it.
+   Bumping them back up on small screens keeps the scale readable at the width a phone renders. */
+@media (max-width: 700px) {
+  .chart-wrap svg text {
+    font-size: 15px;
+  }
 }
 
 svg text {
@@ -593,4 +612,115 @@ button:focus-visible,
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+
+/* ---- responsive ------------------------------------------------------------------- */
+/*
+   The desktop layout is a fixed 330px roster beside the detail pane, which is right for the
+   surface this is — you pick a borrower on the left and read them on the right. Below a tablet
+   width that pairing stops working: the detail column collapses to a few characters wide and the
+   prose wraps one word per line.
+   
+   So the two panes stack rather than shrink. The roster becomes a bounded, scrollable strip at the
+   top instead of a full-height column, which keeps borrower switching one thumb-reach away without
+   pushing the detail pane off-screen.
+*/
+
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: static;
+    max-height: none;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* Capped so the roster cannot fill the viewport on a long cohort — the detail pane has to be
+     visible without scrolling past twelve borrowers to reach it. */
+  .roster {
+    max-height: 42vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .main {
+    padding: 18px 16px 56px;
+  }
+
+  .panel {
+    padding: 16px 14px;
+  }
+
+  /* The headline stats sit right of the name on desktop via margin-left:auto. Stacked, that
+     auto-margin strands them; they become their own row instead. */
+  .headline-numbers {
+    margin-left: 0;
+    width: 100%;
+    gap: 18px;
+  }
+
+  .detail-head {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 560px) {
+  .main {
+    padding: 14px 12px 48px;
+  }
+
+  .detail-head h2 {
+    font-size: 21px;
+  }
+
+  .grade.lg {
+    font-size: 22px;
+  }
+
+  .headline-numbers {
+    /* Two per row rather than a flex line that wraps unevenly — four stats read as a block. */
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 12px;
+  }
+
+  .stat {
+    min-width: 0;
+  }
+
+  .masthead {
+    padding: 16px 14px 14px;
+  }
+
+  .panel > .note {
+    font-size: 13px;
+  }
+}
+
+/*
+   Wide content scrolls inside its own container so the page body never scrolls sideways. The 0G
+   proof table is six columns of hashes and will always exceed a phone's width; letting it push the
+   body wide would break every other panel's layout with it.
+*/
+.panel table.data,
+.scroll-y {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.panel table.data {
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .panel table.data th,
+  .panel table.data td {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
 }

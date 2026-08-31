@@ -82,9 +82,15 @@ export default function ScoreHistoryChart({
 
   return (
     <div className="chart-wrap">
+      {/* viewBox rather than a fixed width: the 860-unit coordinate system stays, but the chart
+          scales to its container instead of overflowing into a horizontal scroll. A score history
+          is read as a shape — whether the line is falling, and how wide the band around it is —
+          and a shape you have to scroll sideways to see is not being read at all. */}
       <svg
-        width={width}
+        viewBox={`0 0 ${width} ${height}`}
+        width="100%"
         height={height}
+        preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label="Score history with confidence interval"
         onMouseLeave={() => setHover(null)}

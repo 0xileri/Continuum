@@ -70,8 +70,11 @@ export default function TermsPanel({ terms, receivables }) {
             </tr>
           </thead>
           <tbody>
-            {[...terms].reverse().map((t) => (
-              <tr key={t.as_of}>
+            {[...terms].reverse().map((t, i) => (
+              // as_of alone is not unique: the backfill scores every borrower at the same
+              // checkpoint, so several rows share a timestamp and React was dropping or
+              // duplicating them. The index disambiguates within an already-ordered list.
+              <tr key={`${t.as_of}-${i}`}>
                 <td className="dim">{fmtDate(t.as_of)}</td>
                 <td className="mono">
                   {t.score} <span className="dim">{t.score_numeric}</span>
