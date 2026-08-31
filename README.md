@@ -4,6 +4,9 @@ Continuous AI credit scoring for the **invoice-financing** vertical of RWA lendi
 re-scored from live financial signal instead of once at origination, and the score is published on
 0G Chain in a form a lending pool can consume directly.
 
+**Dashboard:** https://continuumonx.up.railway.app — read-only, serving the published
+score record.
+
 **Live on 0G Chain mainnet** — [`0x96406Be24513D9eCDE067a8CBa27eEeb3e1A7b3C`](https://chainscan.0g.ai/address/0x96406Be24513D9eCDE067a8CBa27eEeb3e1A7b3C)
 (chain 16661, block 43138713) — **15 score-publish transactions, 12 carrying verified 0G Compute
 TEE attestations**, across all 12 borrowers. Transactions and on-chain parameters are enumerated in [`deployments/integration_proof_mainnet.json`](deployments/integration_proof_mainnet.json),

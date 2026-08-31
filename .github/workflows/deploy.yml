@@ -80,7 +80,7 @@ jobs:
         # bundle being served. This polls until the live HTML references the asset hash this
         # commit builds, so a green check means the site actually changed.
         run: |
-          URL="https://continuum-web-production-f52e.up.railway.app"
+          URL="https://continuumonx.up.railway.app"
           for i in $(seq 1 40); do
             if curl -fsS -m 10 "$URL/health" >/dev/null 2>&1; then
               echo "health ok"
