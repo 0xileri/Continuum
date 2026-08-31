@@ -262,6 +262,8 @@ tests/                116 pytest tests
 
 - [`WAVE3.md`](WAVE3.md) — **read this first.** Every assumption, scope reduction and open question,
   including the three §12 questions and what is not done.
+- [`DESIGN.md`](DESIGN.md) — the design system, in the `DESIGN.md` format an AI agent reads to
+  keep generated UI consistent. Nine sections plus colour and type tokens.
 - [`docs/wave3-brief.pdf`](docs/wave3-brief.pdf) — the source brief. Authoritative wherever it
   disagrees with this README.
 - [`ASSUMPTIONS.md`](ASSUMPTIONS.md) — the earlier off-chain phase's decisions. Still governs the
