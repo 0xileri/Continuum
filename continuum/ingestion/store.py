@@ -18,7 +18,19 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-import pandas as pd
+# pandas is imported lazily, inside the three functions that touch the raw event tables.
+#
+# Every read the API serves — scores, feature records, explanations, the roster, documents — is
+# JSON. Only load_raw and the feature-matrix helpers need pandas, and those are reachable solely
+# from the scoring path and the dispute endpoint. Importing at module scope made a read-only
+# deployment (which ships neither pandas nor a parquet engine) crash on startup rather than simply
+# never calling them, so the dependency now costs nothing until it is actually used.
+#
+# TYPE_CHECKING keeps the annotations honest without paying for the import at runtime.
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 from continuum import config
 from continuum.clock import iso, utc
@@ -33,6 +45,8 @@ def load_raw():
     """Load the raw event tables produced by ``continuum.synth.generate``."""
     from continuum.ingestion.features import RawData
     from continuum.synth.profiles import PAYERS_BY_ID
+
+    import pandas as pd
 
     inv = pd.read_parquet(config.RAW_DIR / "invoices.parquet")
     bank = pd.read_parquet(config.RAW_DIR / "bank_transactions.parquet")
@@ -87,14 +101,16 @@ def load_feature_record(borrower_id: str) -> BorrowerFeatureRecord | None:
         return BorrowerFeatureRecord.model_validate(json.load(fh))
 
 
-def save_feature_matrix(df: pd.DataFrame) -> Path:
+def save_feature_matrix(df: "pd.DataFrame") -> Path:
     """Training matrix: one row per (borrower_id, as_of) observation."""
     path = config.FEATURES_DIR / "training_matrix.parquet"
     df.to_parquet(path, index=False)
     return path
 
 
-def load_feature_matrix() -> pd.DataFrame:
+def load_feature_matrix() -> "pd.DataFrame":
+    import pandas as pd
+
     return pd.read_parquet(config.FEATURES_DIR / "training_matrix.parquet")
 
 
