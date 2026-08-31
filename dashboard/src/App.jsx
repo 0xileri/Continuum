@@ -107,12 +107,12 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="masthead">
-          <h1>Continuum</h1>
-          <p>
-            Continuous credit scoring · invoice financing
-            <br />
-            <span className="mono">{meta?.model_version}</span>
-          </p>
+          <img className="mark" src="/mark.svg" alt="" width="34" height="34" />
+          <div>
+            <h1>Continuum</h1>
+            <p>Continuous credit scoring · invoice financing</p>
+            <span className="ver mono">{meta?.model_version}</span>
+          </div>
         </div>
         <Roster borrowers={borrowers} selectedId={selectedId} onSelect={setSelectedId} />
       </aside>

@@ -2,28 +2,38 @@
    utility framework would be more machinery than the whole frontend. */
 
 :root {
-  --bg: #0d1117;
-  --panel: #161b22;
-  --panel-2: #1c2430;
-  --line: #2a3441;
-  --line-soft: #202834;
-  --text: #e6edf3;
-  --muted: #8b98a9;
-  --dim: #6a7686;
+  /* Instrument panel, not institution. The ground is a cool near-black rather than a neutral one —
+     a pure grey reads as unconsidered next to a teal trace. See the identity sheet. */
+  --bg: #0A0F13;
+  --panel: #121A20;
+  --panel-2: #18222A;
+  --line: #24313A;
+  --line-soft: #1B252C;
+  --text: #E4EDF0;
+  --muted: #93A5AE;
+  --dim: #697C86;
 
-  --strong: #3fb950;
-  --good: #57cf7a;
-  --watch: #d9a441;
-  --weak: #e8833a;
-  --bad: #f0563f;
-  --neutral: #7d8899;
+  /* Semantic only. On this product colour is data: these mean a borrower is deteriorating, not
+     that a designer wanted variety. Never use them decoratively. */
+  --strong: #4BBF8A;
+  --good: #6FD3C7;
+  --watch: #E0A340;
+  --weak: #DE8347;
+  --bad: #E2603F;
+  --neutral: #7C8D96;
 
-  --accent: #58a6ff;
-  --accent-soft: rgba(88, 166, 255, 0.14);
-  --band: rgba(88, 166, 255, 0.16);
+  /* The one accent, spent on the score trace and nothing else. */
+  --accent: #6FD3C7;
+  --accent-soft: rgba(111, 211, 199, 0.13);
+  --accent-line: rgba(111, 211, 199, 0.38);
+  --band: rgba(111, 211, 199, 0.17);
 
-  --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: Archivo, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+  --serif: Newsreader, Georgia, 'Times New Roman', serif;
+
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(0,0,0,.45), 0 10px 28px rgba(0,0,0,.28);
 }
 
 * {
@@ -36,8 +46,15 @@ body {
   color: var(--text);
   font-family: var(--sans);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Digits line up in every column that holds them — scores, intervals, basis points, dates.
+   Without this the roster's numbers jitter as values change and the table reads as unstable. */
+.num, .mono, table.data td, .stat .value, .grade {
+  font-variant-numeric: tabular-nums;
 }
 
 a {
@@ -68,20 +85,42 @@ a {
 }
 
 .masthead {
-  padding: 18px 18px 14px;
+  padding: 20px 18px 16px;
   border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.masthead .mark {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  margin-top: 1px;
 }
 
 .masthead h1 {
-  font-size: 17px;
+  font-size: 20px;
+  font-weight: 600;
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
 }
 
 .masthead p {
-  margin: 4px 0 0;
+  margin: 3px 0 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.masthead .ver {
+  display: inline-block;
+  margin-top: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .06em;
+  color: var(--dim);
 }
 
 .roster {
@@ -113,7 +152,7 @@ a {
 
 .roster-item.selected {
   background: var(--accent-soft);
-  border-color: rgba(88, 166, 255, 0.4);
+  border-color: var(--accent-line);
 }
 
 .roster-item .name {
@@ -150,7 +189,7 @@ a {
   padding: 1px 7px;
   font-size: 12px;
   letter-spacing: 0.02em;
-  color: #0d1117;
+  color: var(--bg);
 }
 
 .grade.lg {
@@ -171,21 +210,28 @@ a {
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 16px 18px;
+  border-radius: var(--radius);
+  padding: 18px 20px;
   margin-bottom: 16px;
+  box-shadow: var(--shadow);
 }
 
+/* Section headings are instrument labels, not titles: mono, small, wide-tracked. They name the
+   panel and then get out of the way, which is what a scanned surface needs. */
 .panel > h2 {
-  margin: 0 0 3px;
-  font-size: 13px;
+  margin: 0 0 4px;
+  font-family: var(--mono);
+  font-size: 10.5px;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--muted);
+  letter-spacing: 0.14em;
+  color: var(--dim);
   font-weight: 600;
 }
 
 .panel > .note {
+  font-family: var(--serif);
+  font-size: 13.5px;
+  line-height: 1.55;
   margin: 0 0 14px;
   color: var(--dim);
   font-size: 12px;
@@ -259,6 +305,8 @@ table.data {
 }
 
 table.data th {
+  font-family: var(--mono);
+  letter-spacing: 0.09em;
   text-align: left;
   color: var(--dim);
   font-weight: 600;
@@ -304,7 +352,7 @@ table.data tr.muted td {
   white-space: nowrap;
 }
 
-.badge.on { border-color: rgba(240, 86, 63, 0.5); color: var(--bad); }
+.badge.on { border-color: rgba(226, 96, 63, 0.5); color: var(--bad); }
 .badge.off { border-color: var(--line); color: var(--dim); }
 .badge.warn { border-color: rgba(217, 164, 65, 0.55); color: var(--watch); }
 .badge.ok { border-color: rgba(63, 185, 80, 0.45); color: var(--strong); }
@@ -497,4 +545,52 @@ svg text {
   font-family: var(--mono);
   color: var(--text);
   margin-bottom: 3px;
+}
+
+
+/* ---- brand pass ------------------------------------------------------------------- */
+
+a {
+  color: var(--accent);
+  text-decoration-color: var(--accent-line);
+  text-underline-offset: 2px;
+}
+
+a:hover { text-decoration-thickness: 2px; }
+
+/* Every interactive element gets a visible keyboard state — the roster is a list of buttons and
+   without this it is unusable without a mouse. */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.detail-head h2 {
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.stat .label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.grade.lg {
+  letter-spacing: -0.02em;
+}
+
+/* Wide content scrolls inside its own container so the page body never scrolls sideways —
+   the 0G proof table is 6 columns of hashes and will always be wider than a narrow viewport. */
+.scroll-y, .panel table.data { scrollbar-width: thin; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
