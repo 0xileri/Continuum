@@ -5,8 +5,8 @@ re-scored from live financial signal instead of once at origination, and the sco
 0G Chain in a form a lending pool can consume directly.
 
 **Live on 0G Chain mainnet** — [`0x96406Be24513D9eCDE067a8CBa27eEeb3e1A7b3C`](https://chainscan.0g.ai/address/0x96406Be24513D9eCDE067a8CBa27eEeb3e1A7b3C)
-(chain 16661, deployed in block 43138713). Score-publish transactions and the on-chain
-parameters are enumerated in [`deployments/integration_proof_mainnet.json`](deployments/integration_proof_mainnet.json),
+(chain 16661, block 43138713) — **7 score-publish transactions, 4 carrying verified 0G Compute
+TEE attestations**, across 5 borrowers. Transactions and on-chain parameters are enumerated in [`deployments/integration_proof_mainnet.json`](deployments/integration_proof_mainnet.json),
 which is generated from the registry's own `ScorePublished` events rather than from a build log.
 
 > **Verifying the contract.** The source has moved on since deployment, so building from `main`

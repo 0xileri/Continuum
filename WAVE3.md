@@ -275,6 +275,18 @@ with an acknowledged TEE signer". That is fine for a demo and wrong for anything
 provider identity is part of what the attestation attests to. `doctor.mjs` prints the export line
 for a specific provider. **Pin one before the submission run.**
 
+### C16. An attestation upgrade publishes even when the score has not moved
+
+Not specified. The publish gate's other rules all ask "has the score moved enough to be worth
+gas?", which is the right question for drift and the wrong one for provenance: an unattested score
+becoming one with a verified TEE signature does not change the number, it changes what the number
+is worth to a pool filtering on `attested`.
+
+One-directional, like the cooldown override. Losing attestation — a Compute outage, say — is not
+news worth gas, so the better record stands until real score movement carries it. Checked before
+the cooldown, which is safe because the rule fires only on the `false -> true` transition and so
+cannot produce the update storm a cooldown exists to damp.
+
 ### C12. A Node bridge, because 0G has no Python SDK
 
 The engine is Python (§8's stack table). 0G ships TypeScript and Go SDKs. `og-bridge/` is a thin

@@ -1,6 +1,6 @@
 {
   "project": "Continuum",
-  "generated_at": "2026-08-31T15:54:45.977Z",
+  "generated_at": "2026-08-31T21:17:58.054Z",
   "source": "derived from on-chain ScorePublished events, not from the publish script log",
   "network": "0g-chain-mainnet",
   "chain_id": 16661,
@@ -15,10 +15,10 @@
     "owner": "0xb0F086D0F9E5E33c97dc9Afe61Dad7165d5F981B",
     "cooldown_seconds": 21600,
     "max_rate_change_bps": 50,
-    "borrower_count": 4
+    "borrower_count": 5
   },
-  "publication_count": 4,
-  "attested_count": 1,
+  "publication_count": 7,
+  "attested_count": 4,
   "publications": [
     {
       "borrower_id": "brw_01hx9p3q7r",
@@ -99,6 +99,66 @@
       "block_number": 43144203,
       "explorer_url": "https://chainscan.0g.ai/tx/0xbae19503bc2a89ba59a9967739151568539a376cac4c2c369baa0bd1f7a51ac7",
       "storage_explorer_url": "https://storagescan.0g.ai/tx/0x3bdd2a2e41972e955f2a103b5bf2fbdc6cb056e780c7062873823df375e239e6"
+    },
+    {
+      "borrower_id": "brw_01hx9p3q7r",
+      "name": "Talbot Fresh Produce",
+      "score": "BBB",
+      "score_numeric": 700,
+      "confidence_interval": [
+        665,
+        735
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 1025,
+      "attested": true,
+      "compute_attestation_ref": "0x63366465633033352d326365342d343232342d626263322d3564363162613266",
+      "storage_root_hash": "0xd0b2942d19c812923a3ef9e62b9c53791967597aa7886528e8a4c8e0c0cbce07",
+      "published_at": "2026-08-31T21:14:55.000Z",
+      "tx_hash": "0x493e9a040f43701d7e6f0209b09f3412c955f8fea2c991c1f91890c4c97c3683",
+      "block_number": 43170049,
+      "explorer_url": "https://chainscan.0g.ai/tx/0x493e9a040f43701d7e6f0209b09f3412c955f8fea2c991c1f91890c4c97c3683",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0xd0b2942d19c812923a3ef9e62b9c53791967597aa7886528e8a4c8e0c0cbce07"
+    },
+    {
+      "borrower_id": "brw_01hxa4s8t2",
+      "name": "Ravensworth Medical Supply",
+      "score": "BBB-",
+      "score_numeric": 685,
+      "confidence_interval": [
+        651,
+        720
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 1075,
+      "attested": true,
+      "compute_attestation_ref": "0x30353435366266382d663431652d346537302d383439372d3266366133306332",
+      "storage_root_hash": "0x04ce95688e4458a5a44e8b7981735e529e0a72825c231502696e1058f0297664",
+      "published_at": "2026-08-31T21:16:07.000Z",
+      "tx_hash": "0xf31be4b708272df5af62201f127085bb948fe0ce469e1b24dc058c2682f85f8d",
+      "block_number": 43170125,
+      "explorer_url": "https://chainscan.0g.ai/tx/0xf31be4b708272df5af62201f127085bb948fe0ce469e1b24dc058c2682f85f8d",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0x04ce95688e4458a5a44e8b7981735e529e0a72825c231502696e1058f0297664"
+    },
+    {
+      "borrower_id": "brw_01hxc7w2x8",
+      "name": "Pennington Textiles",
+      "score": "BB",
+      "score_numeric": 624,
+      "confidence_interval": [
+        590,
+        658
+      ],
+      "trigger_reason": "scheduled_daily",
+      "effective_rate_bps": 1435,
+      "attested": true,
+      "compute_attestation_ref": "0x66313938636265332d623136312d346234622d623936622d3039653065383033",
+      "storage_root_hash": "0xa5c6c28a9a2601298a450807fcde84b20d8304676ae46e8d47f4301ee4c93e47",
+      "published_at": "2026-08-31T21:17:20.000Z",
+      "tx_hash": "0x5cf9c75baa31117b64270d915522947d2afa5be4a1497fa5b443bdc7378bbc67",
+      "block_number": 43170197,
+      "explorer_url": "https://chainscan.0g.ai/tx/0x5cf9c75baa31117b64270d915522947d2afa5be4a1497fa5b443bdc7378bbc67",
+      "storage_explorer_url": "https://storagescan.0g.ai/tx/0xa5c6c28a9a2601298a450807fcde84b20d8304676ae46e8d47f4301ee4c93e47"
     }
   ],
   "og_components": {
