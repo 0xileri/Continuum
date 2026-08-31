@@ -1,0 +1,93 @@
+# Deploy the dashboard to Railway on every push to main.
+#
+# WHY THIS EXISTS
+#
+# Railway's own push-to-deploy is a GitHub App webhook, and it was never firing for this repo —
+# every deploy so far has needed the service source re-attached by hand, which is exactly the thing
+# you do not want to discover an hour before a demo. Granting the Railway GitHub App access is the
+# proper fix, but it needs admin on valeriusxix/Continuum; this workflow does not, so the repo can
+# deploy itself either way. If the App is later connected, this becomes redundant rather than
+# harmful — Railway skips a build whose source is already current.
+#
+# SETUP (one secret, one time)
+#
+#   1. Railway dashboard -> project "continuum" -> Settings -> Tokens -> Create token
+#      (a PROJECT token, scoped to this project; it cannot touch anything else)
+#   2. GitHub -> valeriusxix/Continuum -> Settings -> Secrets and variables -> Actions
+#      -> New repository secret, named RAILWAY_TOKEN
+#
+# Nothing else is needed: the project and service are pinned below, and the token never leaves
+# GitHub's secret store.
+
+name: deploy
+
+on:
+  push:
+    branches: [main]
+    # The 0G bridge, the contracts and the docs do not affect the deployed image, and a deploy per
+    # README typo wastes build minutes. Adjust if the Dockerfile's COPY set changes.
+    paths:
+      - 'continuum/**'
+      - 'dashboard/**'
+      - 'data/public/**'
+      - 'deployments/**'
+      - 'Dockerfile'
+      - '.github/workflows/deploy.yml'
+  # So a deploy can be forced from the Actions tab without an empty commit — useful when the only
+  # change is a Railway-side variable.
+  workflow_dispatch:
+
+# One deploy at a time, and a newer push supersedes an in-flight one rather than racing it.
+concurrency:
+  group: railway-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Guard against a missing token
+        # A clear failure here beats a confusing one from the CLI, and says exactly what to add.
+        run: |
+          if [ -z "${{ secrets.RAILWAY_TOKEN }}" ]; then
+            echo "::error::RAILWAY_TOKEN is not set. Add it under Settings -> Secrets and"
+            echo "::error::variables -> Actions. Create the token in the Railway dashboard:"
+            echo "::error::project 'continuum' -> Settings -> Tokens."
+            exit 1
+          fi
+
+      - name: Install the Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        # `up` uploads this checkout and builds it, so the deployed image always matches the commit
+        # that triggered the run. `redeploy` would reuse the previous build and silently ship stale
+        # code — which is the failure this workflow exists to prevent, so it must not be used here.
+        run: |
+          railway up \
+            --service 5ce5968b-d54d-41cc-99ee-d1c74abdfc22 \
+            --environment 97836e17-e95a-4a1f-a753-c9fbd6f05d42 \
+            --ci
+
+      - name: Verify the deployed bundle matches this commit
+        # Railway reports success once the container starts, which is not the same as the new
+        # bundle being served. This polls until the live HTML references the asset hash this
+        # commit builds, so a green check means the site actually changed.
+        run: |
+          URL="https://continuum-web-production-f52e.up.railway.app"
+          for i in $(seq 1 40); do
+            if curl -fsS -m 10 "$URL/health" >/dev/null 2>&1; then
+              echo "health ok"
+              curl -fsS -m 10 "$URL/og" | head -c 200; echo
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::$URL did not become healthy within 10 minutes"
+          exit 1

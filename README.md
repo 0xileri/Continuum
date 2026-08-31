@@ -203,6 +203,24 @@ By default it **skips any borrower whose attestation did not verify**, because a
 shown as Integration Proof is precisely the overclaim §11 warns about. `--allow-unattested`
 overrides that deliberately.
 
+### Deploying the dashboard
+
+The read-only dashboard deploys itself: pushing to `main` runs
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which builds this checkout and
+ships it to Railway.
+
+It needs one secret, once — `RAILWAY_TOKEN`, a **project** token from the Railway dashboard
+(project → Settings → Tokens), added under GitHub → Settings → Secrets and variables → Actions.
+
+The workflow exists because Railway's own push-to-deploy is a GitHub App webhook that was never
+firing for this repo, so every deploy needed the source re-attached by hand. Connecting the App
+properly is the better fix and needs admin on the repository; this works without it, and becomes
+redundant rather than harmful if the App is connected later.
+
+It uses `railway up` rather than `railway redeploy` deliberately: `redeploy` reuses the previous
+build and would silently ship stale code, which is the exact failure the workflow exists to
+prevent.
+
 ### Environment
 
 | Variable | Default | Purpose |
