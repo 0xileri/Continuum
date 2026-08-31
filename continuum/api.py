@@ -163,6 +163,7 @@ def health() -> dict:
         "borrowers": len(roster),
         "borrowers_scored": len(scored),
         "model_version": config.MODEL_VERSION,
+        "build_commit": config.BUILD_COMMIT,
         "server_time": iso(now()),
         "next_step": (
             "python -m continuum.synth.generate"

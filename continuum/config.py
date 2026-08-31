@@ -599,6 +599,13 @@ haircut schedule is not the same kind of object."""
 # API read layer (ASSUMPTIONS #15) and the §11 dispute path (ASSUMPTIONS #13)
 # --------------------------------------------------------------------------------------
 
+BUILD_COMMIT = os.getenv("CONTINUUM_BUILD_COMMIT", "dev")
+"""The git commit this build came from, stamped into the image at build time.
+
+Served on ``/health`` so "is my fix actually deployed?" has a definite answer. It is otherwise
+guesswork from asset hashes, and guesswork is how a stale deploy survives long enough to be
+demoed."""
+
 API_READ_ONLY = os.getenv("CONTINUUM_API_READ_ONLY", "") == "1"
 """Serve the published record and refuse every write.
 

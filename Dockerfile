@@ -38,6 +38,12 @@ RUN pip install --no-cache-dir \
         "pydantic>=2.10,<3" \
         "python-dotenv>=1.0,<2"
 
+# The commit this image was built from, so a running container can say what it is. Without it
+# "is my fix deployed?" can only be answered by guessing from asset hashes, which is how a stale
+# deploy goes unnoticed.
+ARG GIT_COMMIT=unknown
+ENV CONTINUUM_BUILD_COMMIT=$GIT_COMMIT
+
 COPY continuum/ ./continuum/
 COPY deployments/ ./deployments/
 # Only the sanitised export — see scripts/export_public_data.py. The generator's raw event

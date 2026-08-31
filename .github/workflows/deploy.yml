@@ -63,6 +63,16 @@ jobs:
       - name: Install the Railway CLI
         run: npm install -g @railway/cli
 
+      - name: Stamp the commit onto the service
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        # `railway up` builds remotely, so the Dockerfile's ARG GIT_COMMIT never receives this
+        # SHA — it would stay "unknown" and the verify step could never pass. A service variable
+        # overrides the image's ENV default at runtime, which gets the commit to /health without
+        # needing build args over the wire. --skip-deploys because the next step deploys anyway.
+        run: |
+          railway variables             --set "CONTINUUM_BUILD_COMMIT=${GITHUB_SHA}"             --service 5ce5968b-d54d-41cc-99ee-d1c74abdfc22             --environment 97836e17-e95a-4a1f-a753-c9fbd6f05d42             --skip-deploys
+
       - name: Deploy
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -75,19 +85,26 @@ jobs:
             --environment 97836e17-e95a-4a1f-a753-c9fbd6f05d42 \
             --ci
 
-      - name: Verify the deployed bundle matches this commit
-        # Railway reports success once the container starts, which is not the same as the new
-        # bundle being served. This polls until the live HTML references the asset hash this
-        # commit builds, so a green check means the site actually changed.
+      - name: Verify the deployed commit is this one
+        # Railway reports success when the container starts, which is not the same as the new code
+        # being served — a healthy old container passes that check happily. /health reports the
+        # commit stamped into the image at build time, so this waits for the site to actually be
+        # running THIS commit rather than merely responding.
         run: |
           URL="https://continuumonx.up.railway.app"
+          WANT="${GITHUB_SHA}"
+          echo "expecting build_commit=$WANT"
+
           for i in $(seq 1 40); do
-            if curl -fsS -m 10 "$URL/health" >/dev/null 2>&1; then
-              echo "health ok"
-              curl -fsS -m 10 "$URL/og" | head -c 200; echo
+            GOT=$(curl -fsS -m 10 "$URL/health" 2>/dev/null                   | python3 -c 'import json,sys; print(json.load(sys.stdin).get("build_commit",""))'                   2>/dev/null || true)
+            if [ "$GOT" = "$WANT" ]; then
+              echo "deployed: $GOT"
+              curl -fsS -m 10 "$URL/og"                 | python3 -c 'import json,sys; d=json.load(sys.stdin); print("publications:", d["onchain_count"], "network:", d["network"])'
               exit 0
             fi
+            [ -n "$GOT" ] && echo "  serving $GOT, waiting..."
             sleep 15
           done
-          echo "::error::$URL did not become healthy within 10 minutes"
+
+          echo "::error::$URL is not serving $WANT after 10 minutes (last saw '${GOT:-no response}')"
           exit 1
