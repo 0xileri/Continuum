@@ -48,7 +48,7 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Guard against a missing token
         # A clear failure here beats a confusing one from the CLI, and says exactly what to add.
