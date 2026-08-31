@@ -63,10 +63,20 @@ def put_json(payload: dict, *, name: str) -> StorageResult:
         try:
             result = call_bridge("storage.mjs", {"action": "upload", "path": str(path)})
         except BridgeUnavailable as exc:
-            log.info("0G Storage unavailable, keeping the local copy only: %s", exc)
+            if config.OG_NETWORK == "mainnet":
+                raise RuntimeError(
+                    "0G Storage unavailable in mainnet publish path — refusing to publish. "
+                    "0G Storage is required for mainnet; local-only fallback is not acceptable."
+                ) from exc
+            log.warning("0G Storage unavailable, keeping the local copy only (testnet/demo mode): %s", exc)
             return StorageResult(ref=StorageRef(provider="local"), ok=False, error=str(exc))
         except BridgeError as exc:
-            log.warning("0G Storage upload failed: %s", exc)
+            if config.OG_NETWORK == "mainnet":
+                raise RuntimeError(
+                    "0G Storage upload failed in mainnet publish path — refusing to publish. "
+                    "0G Storage is required for mainnet; local-only fallback is not acceptable."
+                ) from exc
+            log.warning("0G Storage upload failed (testnet/demo mode): %s", exc)
             return StorageResult(ref=StorageRef(provider="local"), ok=False, error=str(exc))
 
     return StorageResult(

@@ -65,7 +65,13 @@ def reason_over_documents(
     from continuum.scoring import llm_agent
 
     visible = llm_agent.visible_documents(documents, as_of)
+    if config.OG_NETWORK == "mainnet" and config.OG_ALLOW_OFFLINE_DEMO:
+        raise RuntimeError(
+            "CONTINUUM_OG_ALLOW_OFFLINE_DEMO cannot be enabled when CONTINUUM_OG_NETWORK=mainnet"
+        )
     if not visible:
+        if config.OG_NETWORK == "mainnet":
+            raise RuntimeError("No documents received for mainnet publish path; refusing to publish")
         return ComputeResult(
             flags=LLMFlags(
                 covenant_breach=False,
@@ -100,13 +106,29 @@ def reason_over_documents(
             },
         )
     except BridgeUnavailable as exc:
-        log.warning("0G Compute unavailable: %s", exc)
-        return ComputeResult(flags=llm_agent.offline_flags(f"0G Compute unavailable: {exc}"),
-                             attestation=Attestation())
+        if config.OG_ALLOW_OFFLINE_DEMO and config.OG_NETWORK != "mainnet":
+            log.warning("0G Compute unavailable in explicitly enabled demo mode: %s", exc)
+            return ComputeResult(
+                flags=llm_agent.offline_flags(f"0G Compute unavailable: {exc}"),
+                attestation=Attestation(verified=False)
+            )
+        log.error("0G Compute unavailable and no verified attestation possible — failing loudly")
+        raise RuntimeError(
+            "0G Compute unavailable — refusing to score/publish without verified attestation. "
+            "Enable CONTINUUM_OG_ALLOW_OFFLINE_DEMO=1 and set CONTINUUM_OG_NETWORK to non-mainnet for testing."
+        ) from exc
     except BridgeError as exc:
-        log.warning("0G Compute call failed: %s", exc)
-        return ComputeResult(flags=llm_agent.offline_flags(f"0G Compute failed: {exc}"),
-                             attestation=Attestation())
+        if config.OG_ALLOW_OFFLINE_DEMO and config.OG_NETWORK != "mainnet":
+            log.warning("0G Compute call failed in explicitly enabled demo mode: %s", exc)
+            return ComputeResult(
+                flags=llm_agent.offline_flags(f"0G Compute failed: {exc}"),
+                attestation=Attestation(verified=False)
+            )
+        log.error("0G Compute call failed and no verified attestation possible — failing loudly")
+        raise RuntimeError(
+            f"0G Compute call failed — refusing to score/publish without verified attestation: {exc}. "
+            "Enable CONTINUUM_OG_ALLOW_OFFLINE_DEMO=1 and set CONTINUUM_OG_NETWORK to non-mainnet for testing."
+        ) from exc
 
     attestation = Attestation.model_validate(result.get("attestation", {}))
     content = result.get("content", "")
@@ -120,18 +142,20 @@ def reason_over_documents(
             }
         )
     except (ValueError, ValidationError) as exc:
-        log.warning("0G Compute response did not validate: %s", exc)
-        return ComputeResult(
-            flags=llm_agent.offline_flags(
-                f"0G Compute returned an unusable response ({type(exc).__name__}); "
-                f"the call was attested but its content could not be validated"
-            ),
-            # The attestation is kept even though the content was unusable: a verified signature
-            # over a malformed answer is still a true fact about what the provider returned, and
-            # discarding it would hide a provider that is reliably producing garbage.
-            attestation=attestation,
-            raw_content=content,
-        )
+        if config.OG_ALLOW_OFFLINE_DEMO and config.OG_NETWORK != "mainnet":
+            log.warning("0G Compute response did not validate: %s", exc)
+            return ComputeResult(
+                flags=llm_agent.offline_flags(
+                    f"0G Compute returned an unusable response ({type(exc).__name__}); "
+                    f"the call was attested but its content could not be validated"
+                ),
+                attestation=attestation,
+                raw_content=content,
+            )
+        raise RuntimeError(
+            "0G Compute returned an unusable response; refusing to publish without a verified "
+            "attestation"
+        ) from exc
 
     shown = {d["doc_id"] for d in visible}
     refs = [r for r in parsed.evidence_refs if r in shown]
@@ -150,11 +174,13 @@ def reason_over_documents(
     )
 
     if not attestation.verified:
-        log.warning(
+        msg = result.get("verify_error", "") or "signature did not verify"
+        log.error(
             "0G Compute returned flags for %s but the TEE signature did not verify (%s)",
             borrower_name,
-            result.get("verify_error", ""),
+            msg,
         )
+        raise RuntimeError("0G Compute attestation missing or unverified — refusing to publish")
 
     return ComputeResult(
         flags=flags,

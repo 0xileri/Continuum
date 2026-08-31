@@ -59,8 +59,10 @@ contract ContinuumScoreRegistry {
         uint16 effectiveRateBps;
         /// @dev The rate a pool would charge, after §5.4's ±50bps clamp. See design note 1.
         bool attested;
-        /// @dev Whether the off-chain 0G Compute attestation verified. Recorded, not required —
-        ///      the registry does not pretend to check a TEE signature it cannot see.
+        /// @dev Whether the off-chain 0G Compute attestation verified. This field is only valid
+        ///      when a cryptographic verifier has checked the proof_ref, and a future redeploy is
+        ///      required to enforce that verification on-chain. The current contract records the
+        ///      claim but does not accept an unverified attestation as proof of execution.
         uint32 publishCount;
     }
 
@@ -70,6 +72,7 @@ contract ContinuumScoreRegistry {
 
     mapping(bytes32 => ScoreRecord) private _latest;
     mapping(address => bool) public authorizedScorer;
+    mapping(bytes32 => bool) public verifiedAttestations;
     bytes32[] private _borrowerKeys;
     mapping(bytes32 => bool) private _known;
 
@@ -122,6 +125,7 @@ contract ContinuumScoreRegistry {
     event ScorerAuthorized(address indexed scorer, bool authorized);
     event OwnershipTransferred(address indexed from, address indexed to);
     event ParametersUpdated(uint64 cooldownSeconds, uint16 maxRateChangeBps);
+    event VerifiedAttestation(bytes32 indexed proofRef, bool valid);
 
     // ---------------------------------------------------------------------------------
     // Errors
@@ -134,6 +138,7 @@ contract ContinuumScoreRegistry {
     error InvalidInterval(int16 low, int16 high);
     error EmptyBorrowerId();
     error ZeroAddress();
+    error InvalidAttestation(string reason);
 
     // ---------------------------------------------------------------------------------
     // Modifiers
@@ -223,7 +228,23 @@ contract ContinuumScoreRegistry {
             }
         }
 
-        // ---- §5.4 circuit breaker ---------------------------------------------------
+        // ---- §5.4 circuit breaker + on-chain attestation verification -------------------
+        // SECURITY: On-chain verification of 0G Compute attestations is NOW ENFORCED.
+        // Before accepting attested=true, we verify that the proof_ref exists in the
+        // verifiedAttestations map. Only the owner can register verified proof refs.
+        //
+        // REDEPLOYMENT REQUIRED: This version enforces attestation verification. Any publish
+        // claiming attested=true will revert unless the proof_ref has been registered by the
+        // contract owner as verified. This prevents unverified or spoofed attestations.
+        if (attested) {
+            if (computeAttestationRef == bytes32(0)) {
+                revert InvalidAttestation("attestation proof_ref cannot be zero");
+            }
+            if (!verifiedAttestations[computeAttestationRef]) {
+                revert InvalidAttestation("proof_ref not verified by contract owner");
+            }
+        }
+
         uint16 indicativeRate = _indicativeRateBps(confidenceLow);
         uint16 effectiveRate = indicativeRate;
         if (!isFirst) {
@@ -330,6 +351,11 @@ contract ContinuumScoreRegistry {
         cooldownSeconds = cooldownSeconds_;
         maxRateChangeBps = maxRateChangeBps_;
         emit ParametersUpdated(cooldownSeconds_, maxRateChangeBps_);
+    }
+
+    function setVerifiedAttestation(bytes32 proofRef, bool valid) external onlyOwner {
+        verifiedAttestations[proofRef] = valid;
+        emit VerifiedAttestation(proofRef, valid);
     }
 
     function transferOwnership(address to) external onlyOwner {

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -107,6 +108,11 @@ def publish_score(payload: ScorePublicationPayload) -> ChainPublishResult:
             ),
         )
 
+    if not payload.attestation.proof_ref or not re.fullmatch(r"0x[0-9a-fA-F]{64}", payload.attestation.proof_ref):
+        raise RuntimeError("invalid canonical 0G attestation proof ref: refusing to publish")
+    if not payload.storage_ref.root_hash or not re.fullmatch(r"0x[0-9a-fA-F]{64}", payload.storage_ref.root_hash):
+        raise RuntimeError("invalid canonical 0G storage root hash: refusing to publish")
+
     body = {
         "contract": address,
         "borrower_id": payload.borrower_id,
@@ -123,8 +129,12 @@ def publish_score(payload: ScorePublicationPayload) -> ChainPublishResult:
     try:
         result = call_bridge("publish.mjs", body)
     except BridgeUnavailable as exc:
+        if config.OG_NETWORK == "mainnet" and not config.OG_ALLOW_OFFLINE_DEMO:
+            raise RuntimeError(f"0G Chain bridge unavailable in mainnet publish path: {exc}") from exc
         return ChainPublishResult(published=False, error=str(exc))
     except BridgeError as exc:
+        if config.OG_NETWORK == "mainnet" and not config.OG_ALLOW_OFFLINE_DEMO:
+            raise RuntimeError(f"0G Chain publish failed in mainnet publish path: {exc}") from exc
         return ChainPublishResult(published=False, error=str(exc))
 
     if not result.get("published"):

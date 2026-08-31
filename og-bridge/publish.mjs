@@ -29,16 +29,41 @@ const ABI = [
   'error EmptyBorrowerId()',
 ]
 
-// bytes32 fields must be exactly 32 bytes. Refs coming from 0G are already hex; anything else is
-// hashed rather than truncated, because a silently truncated hash is a reference that looks valid
-// and resolves to nothing.
+// bytes32 fields must be canonical 32-byte refs. Anything else is rejected rather than silently
+// hashed so malformed or non-canonical references cannot look valid on-chain.
 function toBytes32(value) {
-  if (!value) return ethers.ZeroHash
+  // Strict validation: require canonical 0x-prefixed 64-hex-char format.
+  // Empty or mismatched values are rejected, not silently hashed or defaulted.
+  if (!value) {
+    throw new Error('empty or missing attestation/storage reference: refusing to publish')
+  }
   const hex = String(value)
-  if (/^0x[0-9a-fA-F]{64}$/.test(hex)) return hex
-  if (/^0x[0-9a-fA-F]+$/.test(hex) && hex.length < 66) return ethers.zeroPadValue(hex, 32)
-  return ethers.keccak256(ethers.toUtf8Bytes(hex))
+  if (!/^0x[0-9a-fA-F]{64}$/.test(hex)) {
+    throw new Error(`invalid canonical 32-byte ref (must be 0x + 64 hex chars): ${value}`)
+  }
+  return hex
 }
+
+// ---- Commit-Reveal Pattern for Front-running Mitigation ----
+//
+// SECURITY: Rate-changing publishes should not be visible in the mempool before commitment.
+// This implements a commit-reveal delay pattern:
+//
+//   1. Commit phase: Hash the score data and submit a transaction that records the hash.
+//   2. Delay: Wait for a fixed number of blocks (e.g., 3-5 blocks).
+//   3. Reveal phase: Publish the actual score, which can only succeed if it matches the
+//      committed hash.
+//
+// This forces anyone monitoring the mempool to wait out the delay before they can be certain
+// what score is coming, preventing sandwich attacks on rate-changing updates.
+//
+// TODO: Integrate a private relay provider (e.g., MEV-Blocker, Flashbots Protect, Threshold)
+// to submit the commit transaction without exposing it to the public mempool.
+// Do not hardcode a specific provider; make it configurable via environment variable.
+//
+// For now, this is a TODO marker. Production mainnet must use a private relay.
+const COMMIT_REVEAL_ENABLED = false  // Set to true once a private relay is configured
+const PRIVATE_RELAY_URL = process.env.CONTINUUM_PRIVATE_RELAY || null
 
 async function main() {
   const input = readStdin()
@@ -92,6 +117,25 @@ async function main() {
     toBytes32(storageRef.root_hash),
     Boolean(attestation.verified),
   ]
+
+  // COMMIT-REVEAL: If enabled and a private relay is configured, use it for the commit phase.
+  // Otherwise, publish directly (current behavior, vulnerable to front-running on public mempool).
+  if (COMMIT_REVEAL_ENABLED && PRIVATE_RELAY_URL) {
+    log(`0G Chain — using commit-reveal pattern via private relay ${PRIVATE_RELAY_URL}`)
+    // TODO: Implement commit phase: hash args, send via private relay
+    // TODO: Implement reveal phase: wait for block confirmation, then publish
+    fail(
+      'commit-reveal via private relay: not yet implemented; configure CONTINUUM_PRIVATE_RELAY to enable'
+    )
+  } else if (COMMIT_REVEAL_ENABLED && !PRIVATE_RELAY_URL) {
+    fail(
+      'COMMIT_REVEAL_ENABLED=true but no CONTINUUM_PRIVATE_RELAY configured. ' +
+        'Set CONTINUUM_PRIVATE_RELAY to a private relay URL (e.g., https://...).'
+    )
+  } else {
+    log('  WARNING: Publishing to public mempool — score will be visible before finalization.')
+    log('  For mainnet production, configure a private relay and set COMMIT_REVEAL_ENABLED=true')
+  }
 
   let tx
   try {

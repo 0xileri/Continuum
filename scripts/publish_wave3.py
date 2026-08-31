@@ -48,6 +48,7 @@ from continuum.scoring import aggregate, attestation  # noqa: E402
 
 def preflight(args) -> bool:
     """Refuse to start on a misconfiguration that would waste transactions discovering itself."""
+    config.require_mainnet_for_publish()
     profile = config.og()
     print(f"Continuum Wave 3 publish — {profile['name']} (chain {profile['chain_id']})")
     print(f"  rpc              {profile['rpc_url']}")

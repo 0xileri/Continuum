@@ -64,12 +64,46 @@ path** and reachable only by setting this to ``structured``. See WAVE3.md."""
 # 0G network — verified against docs.0g.ai, August 2026
 # --------------------------------------------------------------------------------------
 
-OG_NETWORK = os.getenv("CONTINUUM_OG_NETWORK", "testnet")
-"""``testnet`` | ``mainnet``. Defaults to testnet deliberately.
+OG_NETWORK = os.getenv("CONTINUUM_OG_NETWORK")
+"""``mainnet`` only for publish/submission runs; it is intentionally not defaulted.
 
-§9 Day 3 sequences testnet-first for "fast, free-gas iteration" and §12 asks for explicit time
-budgeted for the promotion. A default of ``mainnet`` would make every careless local run spend real
-0G, so the promotion is an opt-in environment change rather than the path of least resistance."""
+A silent testnet default is no longer acceptable for a real deployment path. The env var MUST be
+set explicitly to 'mainnet' for any publish/submission script. No default is provided.
+Any publish/submission entrypoint must call require_mainnet_for_publish() before proceeding."""
+
+
+def require_mainnet_for_publish() -> None:
+    """Hard-fail if a publish/submission script is started without mainnet config."""
+    network = os.getenv("CONTINUUM_OG_NETWORK")
+    if not network:
+        raise RuntimeError(
+            "CONTINUUM_OG_NETWORK is unset. Set CONTINUUM_OG_NETWORK=mainnet before any "
+            "publish/submission script starts."
+        )
+    if network != "mainnet":
+        raise RuntimeError(
+            f"CONTINUUM_OG_NETWORK={network!r}. Publish/submission scripts must run on "
+            "mainnet only; set CONTINUUM_OG_NETWORK=mainnet."
+        )
+
+
+def _check_demo_vs_mainnet() -> None:
+    """Prevent accidental demo mode on mainnet — these are incompatible."""
+    if OG_NETWORK == "mainnet" and os.getenv("CONTINUUM_OG_ALLOW_OFFLINE_DEMO", "") == "1":
+        raise RuntimeError(
+            "CONTINUUM_OG_ALLOW_OFFLINE_DEMO=1 is incompatible with CONTINUUM_OG_NETWORK=mainnet. "
+            "Demo/offline mode is only for local testing on non-mainnet networks."
+        )
+
+
+OG_ALLOW_OFFLINE_DEMO = os.getenv("CONTINUUM_OG_ALLOW_OFFLINE_DEMO", "") == "1"
+"""Explicit demo/offline mode for local-only runs.
+
+INCOMPATIBLE with mainnet. A demo path is allowed only when the network is not set to
+``mainnet`` and the operator has intentionally opted into it. The check _check_demo_vs_mainnet()
+enforces this at startup."""
+
+_check_demo_vs_mainnet()
 
 OG_NETWORKS: dict[str, dict[str, object]] = {
     "mainnet": {
@@ -97,6 +131,16 @@ OG_NETWORKS: dict[str, dict[str, object]] = {
 
 def og() -> dict:
     """Active 0G network profile. Overridable per-field by environment."""
+    if not OG_NETWORK:
+        raise RuntimeError(
+            "CONTINUUM_OG_NETWORK is unset. Set CONTINUUM_OG_NETWORK=mainnet before any "
+            "publish/submission script starts."
+        )
+    if OG_NETWORK not in OG_NETWORKS:
+        raise RuntimeError(
+            f"CONTINUUM_OG_NETWORK={OG_NETWORK!r} is unsupported. Use 'mainnet' for publish/"
+            "submission scripts."
+        )
     profile = dict(OG_NETWORKS[OG_NETWORK])
     if rpc := os.getenv("CONTINUUM_OG_RPC_URL"):
         profile["rpc_url"] = rpc
@@ -118,13 +162,17 @@ OG_BRIDGE_TIMEOUT_S = int(os.getenv("CONTINUUM_OG_BRIDGE_TIMEOUT", "180"))
 """Per-call ceiling on the Node bridge. 0G Storage uploads and Compute settlement both wait on
 chain confirmations, so this is minutes rather than seconds."""
 
-OG_REQUIRE_ATTESTATION = os.getenv("CONTINUUM_OG_REQUIRE_ATTESTATION", "") == "1"
-"""Refuse to publish a score whose 0G Compute attestation did not verify.
+OG_REQUIRE_ATTESTATION = True
+"""Mandatory verification for any publish path.
 
-Off by default so a demo still runs when the marketplace is unreachable — the payload then carries
-``type="none"`` and says why, which is the same honesty the earlier phase's stub had. Set this for
-any run whose output is going to be shown as Integration Proof: an unverified attestation rendered
-next to a verified one is precisely the overclaim §11 warns costs you the reader."""
+A publish must carry a verified 0G Compute attestation. There is no opt-in fallback for an
+unverified or missing attestation on a real deployment path."""
+
+OG_ALLOW_OFFLINE_DEMO = os.getenv("CONTINUUM_OG_ALLOW_OFFLINE_DEMO", "") == "1"
+"""Explicit local/demo-only escape hatch.
+
+This may only be true when ``CONTINUUM_OG_NETWORK`` is not ``mainnet``. Mainnet runs must never
+carry a local fallback or an unverified attestation."""
 
 # --------------------------------------------------------------------------------------
 # Synthetic data generation (ASSUMPTIONS #10)

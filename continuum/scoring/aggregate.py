@@ -356,9 +356,13 @@ def score(
     )
     if config.OG_REQUIRE_ATTESTATION and att.type != "0g-compute":
         raise RuntimeError(
-            f"CONTINUUM_OG_REQUIRE_ATTESTATION is set but {record.borrower_id}'s score has no "
-            f"verified 0G Compute attestation ({att.provider}). Refusing to publish an "
-            f"unattested score into a run whose output is Integration Proof."
+            f"{record.borrower_id}'s score has no 0G Compute attestation. Refusing to publish an "
+            f"unattested score."
+        )
+    if config.OG_REQUIRE_ATTESTATION and not att.verified:
+        raise RuntimeError(
+            f"0G Compute attestation missing or unverified for {record.borrower_id} — refusing to "
+            "publish"
         )
     explain_ref = _explain_ref(record.borrower_id, published_at, att.measurement_hash)
 
