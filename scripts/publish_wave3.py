@@ -78,6 +78,11 @@ def preflight(args) -> bool:
             f"CONTINUUM_LLM_BACKEND is {config.LLM_BACKEND!r}, so no 0G Compute attestation will "
             "be produced and §3's exit criterion 2 is not met. Set it to '0g-compute'."
         )
+    if not config.OG_PUBLISH_ON_SCORE:
+        problems.append(
+            "CONTINUUM_OG_PUBLISH is not set to '1'. This publish script costs real 0G and must "
+            "be explicitly opted into before any submission run proceeds."
+        )
 
     if problems:
         print("\nBlocking:")

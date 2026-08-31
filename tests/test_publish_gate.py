@@ -16,6 +16,8 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+import pytest
+
 from continuum import config
 from continuum.scoring.aggregate import publish_decision
 
@@ -122,3 +124,43 @@ def test_reason_is_always_human_readable():
     for args in ((705, "BBB"), (740, "A-"), (520, "B")):
         _, reason = _decide(*args)
         assert reason and reason[0] != " " and len(reason) >= 20
+
+
+def test_og_require_attestation_env_is_respected(monkeypatch):
+    import importlib
+
+    import continuum.config as config
+
+    monkeypatch.setenv("CONTINUUM_OG_REQUIRE_ATTESTATION", "0")
+    importlib.reload(config)
+    assert config.OG_REQUIRE_ATTESTATION is False
+
+    monkeypatch.setenv("CONTINUUM_OG_REQUIRE_ATTESTATION", "1")
+    importlib.reload(config)
+    assert config.OG_REQUIRE_ATTESTATION is True
+
+
+def test_supported_llm_backends_are_enforced(monkeypatch):
+    import importlib
+
+    import continuum.config as config
+
+    monkeypatch.setenv("CONTINUUM_LLM_BACKEND", "anthropic")
+    importlib.reload(config)
+    assert config.LLM_BACKEND == "anthropic"
+
+    monkeypatch.setenv("CONTINUUM_LLM_BACKEND", "bogus")
+    with pytest.raises(RuntimeError, match="CONTINUUM_LLM_BACKEND"):
+        importlib.reload(config)
+
+
+def test_publish_wave3_preflight_requires_publish_flag(monkeypatch):
+    import types
+
+    import scripts.publish_wave3 as publish_wave3
+
+    monkeypatch.setenv("CONTINUUM_OG_NETWORK", "mainnet")
+    monkeypatch.setenv("CONTINUUM_OG_PUBLISH", "0")
+
+    args = types.SimpleNamespace(limit=1, yes=True)
+    assert publish_wave3.preflight(args) is False

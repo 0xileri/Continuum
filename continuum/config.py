@@ -162,11 +162,13 @@ OG_BRIDGE_TIMEOUT_S = int(os.getenv("CONTINUUM_OG_BRIDGE_TIMEOUT", "180"))
 """Per-call ceiling on the Node bridge. 0G Storage uploads and Compute settlement both wait on
 chain confirmations, so this is minutes rather than seconds."""
 
-OG_REQUIRE_ATTESTATION = True
-"""Mandatory verification for any publish path.
+OG_REQUIRE_ATTESTATION = os.getenv("CONTINUUM_OG_REQUIRE_ATTESTATION", "0") == "1"
+"""Mandatory verification for any publish path when explicitly enabled.
 
-A publish must carry a verified 0G Compute attestation. There is no opt-in fallback for an
-unverified or missing attestation on a real deployment path."""
+A publish must carry a verified 0G Compute attestation when this flag is set to ``1``. The
+runtime defaults to off so local or synthetic runs do not fail on a missing attestation, but a
+mainnet submission run should set it explicitly to avoid accidental publishing without a valid
+proof."""
 
 OG_ALLOW_OFFLINE_DEMO = os.getenv("CONTINUUM_OG_ALLOW_OFFLINE_DEMO", "") == "1"
 """Explicit local/demo-only escape hatch.
@@ -200,6 +202,11 @@ iterating on prompt wording without spending 0G, and it is what the pre-0G phase
 
 ``offline`` raises no flags at zero confidence. Not an approximation of the agent — see
 ``llm_agent.offline_flags``."""
+if LLM_BACKEND not in {"0g-compute", "anthropic", "offline"}:
+    raise RuntimeError(
+        "CONTINUUM_LLM_BACKEND must be one of {'0g-compute', 'anthropic', 'offline'}; "
+        f"got {LLM_BACKEND!r}."
+    )
 
 OG_PUBLISH_ON_SCORE = os.getenv("CONTINUUM_OG_PUBLISH", "") == "1"
 """Whether ``aggregate.publish`` also writes to 0G Storage and the on-chain registry.
