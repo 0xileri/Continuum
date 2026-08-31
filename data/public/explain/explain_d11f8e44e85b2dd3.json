@@ -1,0 +1,209 @@
+{
+  "explainability_ref": "explain_d11f8e44e85b2dd3",
+  "borrower_id": "brw_01hxh4g7h2",
+  "borrower_name": "Copperfield Engineering",
+  "as_of": "2026-06-08T22:38:00Z",
+  "published_at": "2026-06-08T22:38:00Z",
+  "model_version": "continuum-scoring-v0.1.0-wave3",
+  "model_artifact_sha256": "75cf7e9d7170645c8de273aa1f25da21a7d8a3811038c015ef58f4c6259ef7c3",
+  "trigger_reason": "scheduled_daily",
+  "scorer": "weighted_quant_v1",
+  "score_build_up": {
+    "pd": 0.333199,
+    "base_rate": 0.28,
+    "points_from_model": 674.68,
+    "llm_penalty": -0.0,
+    "points_after_llm": 674.68,
+    "staleness_penalty": -0.0,
+    "points_after_staleness": 674.68,
+    "grade_ceiling": 888.81,
+    "ceiling_binding": false,
+    "score_numeric": 675,
+    "grade": "BBB-",
+    "confidence_interval": [
+      638,
+      712
+    ],
+    "grade_band": [
+      650,
+      689
+    ]
+  },
+  "staleness": {
+    "silent": false,
+    "weighted_silence_days": 0.0,
+    "penalty_points": 0.0,
+    "per_feed_days": {
+      "invoice_feed": 0.0,
+      "bank_feed": 0.0,
+      "accounting_feed": 0.0,
+      "document_feed": 0.0,
+      "onchain_feed": 0.0
+    },
+    "worst_feed": "",
+    "worst_days": 0.0,
+    "never_reported": [],
+    "ratchet_ceiling": null,
+    "grace_hours": 48.0,
+    "points_per_weighted_day": 3.2,
+    "rule": "\u00a74 \u2014 silence is worsening information: the penalty is unbounded in duration and the ratchet forbids the score rising while a feed stays quiet.",
+    "notes": []
+  },
+  "feature_attribution": [
+    {
+      "_base_log_odds": 0.5,
+      "_feature_sum_log_odds": -0.098518,
+      "_units": "composite_health_index"
+    },
+    {
+      "feature": "revenue_trend_90d",
+      "value": 0.5224,
+      "normalised": 1.0,
+      "weight": 0.22,
+      "contribution": 0.11,
+      "direction": "decreases_risk",
+      "pivot": 0.0,
+      "share_of_total_abs": 0.3454
+    },
+    {
+      "feature": "on_time_repayment_rate_180d",
+      "value": 0.8462,
+      "normalised": 0.231,
+      "weight": 0.35,
+      "contribution": -0.09415,
+      "direction": "increases_risk",
+      "pivot": 0.9,
+      "share_of_total_abs": 0.2956
+    },
+    {
+      "feature": "days_sales_outstanding",
+      "value": 58.41,
+      "normalised": 0.1648,
+      "weight": 0.25,
+      "contribution": -0.083812,
+      "direction": "increases_risk",
+      "pivot": 45.0,
+      "share_of_total_abs": 0.2631
+    },
+    {
+      "feature": "payer_concentration_top1_pct",
+      "value": 0.4679,
+      "normalised": 0.3303,
+      "weight": 0.18,
+      "contribution": -0.030555,
+      "direction": "increases_risk",
+      "pivot": 0.4,
+      "share_of_total_abs": 0.0959
+    }
+  ],
+  "features": {
+    "revenue_30d": 103934.01,
+    "revenue_trend_90d": 0.5224,
+    "days_sales_outstanding": 58.41,
+    "payer_concentration_top1_pct": 0.4679,
+    "on_time_repayment_rate_180d": 0.8462,
+    "days_since_last_late_payment": 50.9,
+    "revenue_volatility_90d": 0.2112,
+    "cash_runway_days": 59.6,
+    "invoice_volume_30d": 77429.89,
+    "avg_invoice_age_days": 26.1,
+    "dispute_rate_90d": 0.0376,
+    "late_payment_count_90d": 1.0,
+    "payment_velocity_ratio": 0.9201,
+    "payer_concentration_hhi": 0.3631,
+    "payer_payment_delay_trend_60d": -10.98,
+    "payer_risk_score": 0.8158,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 1.1926
+  },
+  "interval": {
+    "half_width_points": 37.06,
+    "base_half_width": 18.0,
+    "max_half_width": 140.0,
+    "capped": false,
+    "terms": {
+      "data_quality": 0.04,
+      "model_variance": 0.45,
+      "anomaly_pressure": 0.0,
+      "llm_confidence": 1.0
+    },
+    "term_contributions": {
+      "data_quality": 0.064,
+      "model_variance": 0.495,
+      "anomaly_pressure": 0.0,
+      "llm_confidence": 0.5
+    },
+    "ceiling_multiple": 3.0
+  },
+  "model_uncertainty": {
+    "novelty_share": 0.0,
+    "out_of_range_features": [],
+    "cv_auc_fold_std": 0.0,
+    "fold_std_saturation_ref": 0.1,
+    "n_train_rows": 0,
+    "n_train_borrowers": 0
+  },
+  "llm": {
+    "flags_raised": [],
+    "penalty_points": -0.0,
+    "penalty_cap": 150.0,
+    "confidence": 0.0,
+    "source": "offline_fixture",
+    "model_used": "",
+    "escalated": false,
+    "output_mode": "none",
+    "rationale": "No document assessment available: CONTINUUM_LLM_BACKEND=offline. Flags are neutral and carry zero confidence; they are not a model judgement.",
+    "evidence_refs": []
+  },
+  "anomaly": {
+    "triggered": false,
+    "trigger_reason": null,
+    "pressure": 0.0,
+    "abstained": false,
+    "signals": []
+  },
+  "data_quality": {
+    "score": 0.96,
+    "level": "fresh",
+    "degraded_feeds": [],
+    "feed_freshness": {
+      "invoice_feed": 1.0,
+      "bank_feed": 1.0,
+      "accounting_feed": 1.0,
+      "document_feed": 1.0,
+      "onchain_feed": 1.0
+    },
+    "source_freshness": {
+      "accounting_feed": "2026-06-08T01:55:38Z",
+      "bank_feed": "2026-06-08T08:16:02Z",
+      "invoice_feed": "2026-06-08T04:40:44Z",
+      "document_feed": "2026-06-04T05:10:51Z",
+      "onchain_feed": "2026-06-08T12:01:31Z"
+    }
+  },
+  "publish_decision": {
+    "published_onchain": false,
+    "reason": "2pt drift from published 673 is under the 10pt threshold; recorded, not republished",
+    "threshold_points": 10.0,
+    "cooldown_hours": 6,
+    "measured_against": {
+      "score_numeric": 673,
+      "score": "BBB-",
+      "published_at": "2026-05-19T00:44:00Z"
+    }
+  },
+  "attestation": {
+    "type": "none",
+    "provider": "not_attested",
+    "job_id": "",
+    "proof_ref": "",
+    "compute_node": "",
+    "verified": false,
+    "model": "",
+    "measurement_hash": "0x24e5384895cc5058370d701874f5317f8f866257609b6addf621351944925332",
+    "signature": null
+  },
+  "attestation_summary": "no attestation \u2014 score computed locally, unverified (\u00a75.2 fallback)",
+  "input_digest": "a4e856cca86f37b276061d178ad63dccd1400c02ac030c4d8199f3652e5ce4d9",
+  "trust_disclaimer": "Wave 3 is a single-operator system. The 0G Compute attestation covers the document reasoning call only: a TEE-held key signed that response and the broker verified the signature. The aggregation arithmetic ran off-chain on the operator's machine \u2014 the \u00a75.2 fallback, taken because 0G Compute serves inference against registered providers and does not execute arbitrary jobs. measurement_hash binds this score to one feature record and one scoring rule; it is tamper evidence, not a proof of honest execution, and nothing here is evidence that the underlying invoice data was real."
+}

@@ -32,7 +32,7 @@ from typing import Any
 
 from fastapi import Body, FastAPI, HTTPException, Path, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from continuum import config, consumption
@@ -585,6 +585,17 @@ def file_dispute(
     reviewer can compare against the contested score, not a new published value. A borrower who
     could publish by complaining would have found the cheapest downgrade-reversal in the system.
     """
+    if config.API_READ_ONLY:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "This instance is read-only. Filing a dispute triggers a re-read on the "
+                "escalation model, which spends from the operator's 0G Compute ledger — not "
+                "something an unauthenticated public endpoint should be able to do. Run the "
+                "engine locally to exercise the §11 appeal path."
+            ),
+        )
+
     borrower = _borrower_or_404(borrower_id)
     latest = store.latest_score(borrower_id)
     filed_at = utc(now())
@@ -707,3 +718,37 @@ def _reassess(borrower: dict, contested: ScorePublicationPayload) -> dict:
             "whether to publish an override."
         ),
     }
+
+
+# --------------------------------------------------------------------------------------
+# Static dashboard — single-service deployment
+# --------------------------------------------------------------------------------------
+#
+# In development the Vite dev server runs separately and proxies /api here. In a deployed build
+# there is one process: this one serves the compiled dashboard and the API together, which removes
+# the CORS surface entirely and means one URL to share.
+#
+# Registered last, deliberately. FastAPI matches routes in registration order, so every API path
+# above wins; the catch-all below only ever sees what nothing else claimed. Mounting it earlier
+# would shadow the whole API.
+
+_DIST = config.PROJECT_ROOT / "dashboard" / "dist"
+
+if _DIST.is_dir():
+    from fastapi.staticfiles import StaticFiles
+
+    app.mount("/assets", StaticFiles(directory=_DIST / "assets"), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def spa(full_path: str) -> FileResponse:
+        """Serve a built file if it exists, otherwise the SPA shell.
+
+        The dashboard holds its state client-side, so a deep link or a refresh has to return
+        index.html and let the app resolve the route rather than 404.
+        """
+        candidate = (_DIST / full_path).resolve()
+        # Containment check: full_path is attacker-controlled, and without this a request for
+        # ../../.env would escape the build directory and serve whatever it found.
+        if full_path and _DIST.resolve() in candidate.parents and candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(_DIST / "index.html")

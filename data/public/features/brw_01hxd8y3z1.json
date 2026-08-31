@@ -1,0 +1,66 @@
+{
+  "borrower_id": "brw_01hxd8y3z1",
+  "as_of": "2026-08-11T00:00:00Z",
+  "source_freshness": {
+    "accounting_feed": "2026-08-09T19:36:33.281360Z",
+    "bank_feed": "2026-08-10T11:03:45.531444Z",
+    "invoice_feed": "2026-08-10T05:50:13.828475Z",
+    "document_feed": "2026-08-03T04:54:54.085592Z",
+    "onchain_feed": "2026-08-10T11:37:13.172292Z"
+  },
+  "features": {
+    "revenue_30d": 146795.93,
+    "revenue_trend_90d": -0.4277,
+    "days_sales_outstanding": 79.65,
+    "payer_concentration_top1_pct": 0.5669,
+    "on_time_repayment_rate_180d": 0.6154,
+    "days_since_last_late_payment": 16.0,
+    "revenue_volatility_90d": 0.3477,
+    "cash_runway_days": 67.8,
+    "invoice_volume_30d": 260827.78,
+    "avg_invoice_age_days": 46.4,
+    "dispute_rate_90d": 0.0982,
+    "late_payment_count_90d": 2.0,
+    "payment_velocity_ratio": 1.0489,
+    "payer_concentration_hhi": 0.4154,
+    "payer_payment_delay_trend_60d": 7.85,
+    "payer_risk_score": 0.6959,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 5.3917
+  },
+  "llm_flags": {
+    "covenant_breach": false,
+    "adverse_news_detected": false,
+    "confidence": 0.7,
+    "evidence_refs": [
+      "doc_d8y3z1_01"
+    ],
+    "payer_deterioration": true,
+    "rationale": "doc_d8y3z1_01 is a third-party letter from payer Castellan Property Services formally disputing invoices totalling GBP 38,349, withholding settlement, and unilaterally extending payment terms from 30 to 90 days, which clearly establishes payer_deterioration. No document identifies a specific covenant breach \u00e2\u20ac\u201d the self-reported management accounts (doc_d8y3z1_00) affirm trading remains within facility parameters \u00e2\u20ac\u201d and no third-party adverse news about the borrower itself is present; confidence is moderated by the thin two-document set and the self-reported, uncorroborated financial statement.",
+    "source": "0g-compute",
+    "model_used": "zai-org/GLM-5-FP8",
+    "escalated": false,
+    "output_mode": "text_json"
+  },
+  "data_quality_score": 0.96,
+  "feed_freshness_detail": {
+    "invoice_feed": 1.0,
+    "bank_feed": 1.0,
+    "accounting_feed": 1.0,
+    "document_feed": 1.0,
+    "onchain_feed": 1.0
+  },
+  "compute_attestation": {
+    "type": "0g-compute",
+    "provider": "0g-compute-network",
+    "job_id": "0dc306ec-c6a4-44a9-b10b-537110b2e8d9",
+    "proof_ref": "0x30646333303665632d633661342d343461392d623130622d3533373131306232",
+    "compute_node": "0xd9966e13a6026Fcca4b13E7ff95c94DE268C471C",
+    "verified": true,
+    "model": "zai-org/GLM-5-FP8",
+    "measurement_hash": "",
+    "signature": null
+  },
+  "borrower_name": "Kingsley Civil Works",
+  "sector": "construction"
+}

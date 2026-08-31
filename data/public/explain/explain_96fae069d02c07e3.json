@@ -1,0 +1,211 @@
+{
+  "explainability_ref": "explain_96fae069d02c07e3",
+  "borrower_id": "brw_01hxc7w2x8",
+  "borrower_name": "Pennington Textiles",
+  "as_of": "2026-05-25T23:16:00Z",
+  "published_at": "2026-05-25T23:16:00Z",
+  "model_version": "continuum-scoring-v0.1.0-wave3",
+  "model_artifact_sha256": "75cf7e9d7170645c8de273aa1f25da21a7d8a3811038c015ef58f4c6259ef7c3",
+  "trigger_reason": "scheduled_daily",
+  "scorer": "weighted_quant_v1",
+  "score_build_up": {
+    "pd": 0.496378,
+    "base_rate": 0.28,
+    "points_from_model": 606.08,
+    "llm_penalty": -0.0,
+    "points_after_llm": 606.08,
+    "staleness_penalty": -0.0,
+    "points_after_staleness": 606.08,
+    "grade_ceiling": 859.11,
+    "ceiling_binding": false,
+    "score_numeric": 606,
+    "grade": "BB-",
+    "confidence_interval": [
+      559,
+      653
+    ],
+    "grade_band": [
+      570,
+      609
+    ]
+  },
+  "staleness": {
+    "silent": false,
+    "weighted_silence_days": 0.0,
+    "penalty_points": 0.0,
+    "per_feed_days": {
+      "invoice_feed": 0.0,
+      "bank_feed": 0.0,
+      "accounting_feed": 0.0,
+      "document_feed": 0.0,
+      "onchain_feed": 0.0
+    },
+    "worst_feed": "",
+    "worst_days": 0.0,
+    "never_reported": [],
+    "ratchet_ceiling": null,
+    "grace_hours": 48.0,
+    "points_per_weighted_day": 3.2,
+    "rule": "\u00a74 \u2014 silence is worsening information: the penalty is unbounded in duration and the ratchet forbids the score rising while a feed stays quiet.",
+    "notes": []
+  },
+  "feature_attribution": [
+    {
+      "_base_log_odds": 0.5,
+      "_feature_sum_log_odds": -0.4007,
+      "_units": "composite_health_index"
+    },
+    {
+      "feature": "days_sales_outstanding",
+      "value": 68.25,
+      "normalised": 0.0,
+      "weight": 0.25,
+      "contribution": -0.125,
+      "direction": "increases_risk",
+      "pivot": 45.0,
+      "share_of_total_abs": 0.312
+    },
+    {
+      "feature": "revenue_trend_90d",
+      "value": -0.6848,
+      "normalised": 0.0,
+      "weight": 0.22,
+      "contribution": -0.11,
+      "direction": "increases_risk",
+      "pivot": 0.0,
+      "share_of_total_abs": 0.2745
+    },
+    {
+      "feature": "on_time_repayment_rate_180d",
+      "value": 0.8462,
+      "normalised": 0.231,
+      "weight": 0.35,
+      "contribution": -0.09415,
+      "direction": "increases_risk",
+      "pivot": 0.9,
+      "share_of_total_abs": 0.235
+    },
+    {
+      "feature": "payer_concentration_top1_pct",
+      "value": 0.559,
+      "normalised": 0.1025,
+      "weight": 0.18,
+      "contribution": -0.07155,
+      "direction": "increases_risk",
+      "pivot": 0.4,
+      "share_of_total_abs": 0.1786
+    }
+  ],
+  "features": {
+    "revenue_30d": 41696.8,
+    "revenue_trend_90d": -0.6848,
+    "days_sales_outstanding": 68.25,
+    "payer_concentration_top1_pct": 0.559,
+    "on_time_repayment_rate_180d": 0.8462,
+    "days_since_last_late_payment": 51.0,
+    "revenue_volatility_90d": 0.4319,
+    "cash_runway_days": 86.4,
+    "invoice_volume_30d": 90090.2,
+    "avg_invoice_age_days": 43.3,
+    "dispute_rate_90d": 0.0391,
+    "late_payment_count_90d": 1.0,
+    "payment_velocity_ratio": 1.0411,
+    "payer_concentration_hhi": 0.4111,
+    "payer_payment_delay_trend_60d": 4.06,
+    "payer_risk_score": 0.7512,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 6.9112
+  },
+  "interval": {
+    "half_width_points": 46.96,
+    "base_half_width": 18.0,
+    "max_half_width": 140.0,
+    "capped": false,
+    "terms": {
+      "data_quality": 0.04,
+      "model_variance": 0.95,
+      "anomaly_pressure": 0.0,
+      "llm_confidence": 1.0
+    },
+    "term_contributions": {
+      "data_quality": 0.064,
+      "model_variance": 1.045,
+      "anomaly_pressure": 0.0,
+      "llm_confidence": 0.5
+    },
+    "ceiling_multiple": 3.0
+  },
+  "model_uncertainty": {
+    "novelty_share": 0.25,
+    "out_of_range_features": [
+      "revenue_trend_90d"
+    ],
+    "cv_auc_fold_std": 0.0,
+    "fold_std_saturation_ref": 0.1,
+    "n_train_rows": 0,
+    "n_train_borrowers": 0
+  },
+  "llm": {
+    "flags_raised": [],
+    "penalty_points": -0.0,
+    "penalty_cap": 150.0,
+    "confidence": 0.0,
+    "source": "offline_fixture",
+    "model_used": "",
+    "escalated": false,
+    "output_mode": "none",
+    "rationale": "No document assessment available: CONTINUUM_LLM_BACKEND=offline. Flags are neutral and carry zero confidence; they are not a model judgement.",
+    "evidence_refs": []
+  },
+  "anomaly": {
+    "triggered": false,
+    "trigger_reason": null,
+    "pressure": 0.0,
+    "abstained": false,
+    "signals": []
+  },
+  "data_quality": {
+    "score": 0.96,
+    "level": "fresh",
+    "degraded_feeds": [],
+    "feed_freshness": {
+      "invoice_feed": 1.0,
+      "bank_feed": 1.0,
+      "accounting_feed": 1.0,
+      "document_feed": 1.0,
+      "onchain_feed": 1.0
+    },
+    "source_freshness": {
+      "accounting_feed": "2026-05-25T08:27:12Z",
+      "bank_feed": "2026-05-25T16:39:03Z",
+      "invoice_feed": "2026-05-25T21:29:37Z",
+      "document_feed": "2026-05-05T00:55:39Z",
+      "onchain_feed": "2026-05-25T11:58:18Z"
+    }
+  },
+  "publish_decision": {
+    "published_onchain": false,
+    "reason": "2pt drift from published 604 is under the 10pt threshold; recorded, not republished",
+    "threshold_points": 10.0,
+    "cooldown_hours": 6,
+    "measured_against": {
+      "score_numeric": 604,
+      "score": "BB-",
+      "published_at": "2026-05-11T23:43:00Z"
+    }
+  },
+  "attestation": {
+    "type": "none",
+    "provider": "not_attested",
+    "job_id": "",
+    "proof_ref": "",
+    "compute_node": "",
+    "verified": false,
+    "model": "",
+    "measurement_hash": "0xf8cf6f329ac6c6f5c22e4d821412d0de25279439e143d8c82e4ddccaf8f29f8d",
+    "signature": null
+  },
+  "attestation_summary": "no attestation \u2014 score computed locally, unverified (\u00a75.2 fallback)",
+  "input_digest": "4c84b118d5ed690d171c7636e9ba5228b39d5be4207c0036b1aa165adf228571",
+  "trust_disclaimer": "Wave 3 is a single-operator system. The 0G Compute attestation covers the document reasoning call only: a TEE-held key signed that response and the broker verified the signature. The aggregation arithmetic ran off-chain on the operator's machine \u2014 the \u00a75.2 fallback, taken because 0G Compute serves inference against registered providers and does not execute arbitrary jobs. measurement_hash binds this score to one feature record and one scoring rule; it is tamper evidence, not a proof of honest execution, and nothing here is evidence that the underlying invoice data was real."
+}

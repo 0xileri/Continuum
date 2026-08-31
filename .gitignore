@@ -35,3 +35,10 @@ data/disputes/
 # Deployment records and the §10 integration proof are COMMITTED deliberately — they are the
 # submission artifact. Only local overrides are ignored.
 deployments/*.local.json
+
+# The sanitised published record IS committed — it is what the read-only deployment serves, and
+# the score log, feature records and explanation artifacts are exactly the artifacts this product
+# claims are auditable. scripts/export_public_data.py builds it and refuses to write one that
+# still contains the generator's ground truth.
+!data/public/
+!data/public/**

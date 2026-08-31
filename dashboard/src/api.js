@@ -1,7 +1,9 @@
 // Thin client over continuum.api. Every path is relative so it works through the Vite proxy in
 // dev and against a same-origin build in preview.
 
-const BASE = '/api'
+// Dev: the Vite server proxies /api to the API process on another port.
+// Prod: the API serves this bundle itself, so paths are same-origin at the root.
+const BASE = import.meta.env.PROD ? '' : '/api'
 
 async function get(path) {
   const res = await fetch(`${BASE}${path}`)

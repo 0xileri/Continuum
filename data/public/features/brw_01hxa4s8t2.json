@@ -1,0 +1,64 @@
+{
+  "borrower_id": "brw_01hxa4s8t2",
+  "as_of": "2026-08-11T00:00:00Z",
+  "source_freshness": {
+    "accounting_feed": "2026-08-09T09:51:20.625749Z",
+    "bank_feed": "2026-08-10T06:53:03.968733Z",
+    "invoice_feed": "2026-08-10T04:41:10.151231Z",
+    "document_feed": "2026-08-03T11:47:45.181604Z",
+    "onchain_feed": "2026-08-10T02:36:40.964979Z"
+  },
+  "features": {
+    "revenue_30d": 329083.94,
+    "revenue_trend_90d": -0.0261,
+    "days_sales_outstanding": 43.66,
+    "payer_concentration_top1_pct": 0.6566,
+    "on_time_repayment_rate_180d": 0.9231,
+    "days_since_last_late_payment": 44.0,
+    "revenue_volatility_90d": 0.0488,
+    "cash_runway_days": 71.6,
+    "invoice_volume_30d": 284378.11,
+    "avg_invoice_age_days": 22.7,
+    "dispute_rate_90d": 0.0139,
+    "late_payment_count_90d": 1.0,
+    "payment_velocity_ratio": 0.9482,
+    "payer_concentration_hhi": 0.5491,
+    "payer_payment_delay_trend_60d": -0.79,
+    "payer_risk_score": 0.8722,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 1.3238
+  },
+  "llm_flags": {
+    "covenant_breach": false,
+    "adverse_news_detected": false,
+    "confidence": 0.35,
+    "evidence_refs": [],
+    "payer_deterioration": false,
+    "rationale": "The only covenant certificate (doc_a4s8t2_00) is from October 2025 \u00e2\u20ac\u201d roughly ten months stale \u00e2\u20ac\u201d and shows all covenants passing with an explicit no-default statement; no subsequent compliance certificate or breach notice is present. Both documents are self-reported, no third-party corroboration exists, and no adverse news or payer distress is mentioned in any document.",
+    "source": "0g-compute",
+    "model_used": "zai-org/GLM-5-FP8",
+    "escalated": false,
+    "output_mode": "text_json"
+  },
+  "data_quality_score": 0.96,
+  "feed_freshness_detail": {
+    "invoice_feed": 1.0,
+    "bank_feed": 1.0,
+    "accounting_feed": 1.0,
+    "document_feed": 1.0,
+    "onchain_feed": 1.0
+  },
+  "compute_attestation": {
+    "type": "0g-compute",
+    "provider": "0g-compute-network",
+    "job_id": "4c92c52c-4e92-49f0-b3a6-ff624131c6bc",
+    "proof_ref": "0x34633932633532632d346539322d343966302d623361362d6666363234313331",
+    "compute_node": "0xd9966e13a6026Fcca4b13E7ff95c94DE268C471C",
+    "verified": true,
+    "model": "zai-org/GLM-5-FP8",
+    "measurement_hash": "",
+    "signature": null
+  },
+  "borrower_name": "Ravensworth Medical Supply",
+  "sector": "healthcare"
+}

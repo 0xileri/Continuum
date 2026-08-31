@@ -1,0 +1,68 @@
+{
+  "borrower_id": "brw_01hxf2c5d9",
+  "as_of": "2026-08-11T00:00:00Z",
+  "source_freshness": {
+    "accounting_feed": "2026-08-09T12:21:00.686831Z",
+    "bank_feed": "2026-08-10T00:27:15.575072Z",
+    "invoice_feed": "2026-08-10T16:12:23.692025Z",
+    "document_feed": "2026-08-03T00:29:16.284808Z",
+    "onchain_feed": "2026-08-10T13:35:45.046968Z"
+  },
+  "features": {
+    "revenue_30d": 62320.62,
+    "revenue_trend_90d": -0.1004,
+    "days_sales_outstanding": 86.99,
+    "payer_concentration_top1_pct": 0.7345,
+    "on_time_repayment_rate_180d": 0.8462,
+    "days_since_last_late_payment": 44.0,
+    "revenue_volatility_90d": 0.1839,
+    "cash_runway_days": 68.5,
+    "invoice_volume_30d": 53527.39,
+    "avg_invoice_age_days": 50.0,
+    "dispute_rate_90d": 0.0709,
+    "late_payment_count_90d": 2.0,
+    "payment_velocity_ratio": 1.0489,
+    "payer_concentration_hhi": 0.61,
+    "payer_payment_delay_trend_60d": 8.77,
+    "payer_risk_score": 0.5906,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 3.2498
+  },
+  "llm_flags": {
+    "covenant_breach": true,
+    "adverse_news_detected": true,
+    "confidence": 0.85,
+    "evidence_refs": [
+      "doc_f2c5d9_00",
+      "doc_f2c5d9_01",
+      "doc_f2c5d9_02"
+    ],
+    "payer_deterioration": true,
+    "rationale": "doc_f2c5d9_00 is a self-reported breach notice stating two specific covenant failures \u00e2\u20ac\u201d Interest Cover Ratio 1.42x vs 2.00x minimum and Debtor Concentration 61% vs 45% maximum \u00e2\u20ac\u201d declared an Event of Default under Clause 24.2. doc_f2c5d9_02 is third-party trade press reporting restructuring advisers, lender talks, and credit-insurer cover cuts on the borrower, while doc_f2c5d9_01 is payer correspondence from Cedarbrook Hospitality disputing invoices and unilaterally extending payment terms to 90 days.",
+    "source": "0g-compute",
+    "model_used": "zai-org/GLM-5-FP8",
+    "escalated": false,
+    "output_mode": "text_json"
+  },
+  "data_quality_score": 0.96,
+  "feed_freshness_detail": {
+    "invoice_feed": 1.0,
+    "bank_feed": 1.0,
+    "accounting_feed": 1.0,
+    "document_feed": 1.0,
+    "onchain_feed": 1.0
+  },
+  "compute_attestation": {
+    "type": "0g-compute",
+    "provider": "0g-compute-network",
+    "job_id": "91955c3e-75a7-45e2-886c-6ae254b273bb",
+    "proof_ref": "0x39313935356333652d373561372d343565322d383836632d3661653235346232",
+    "compute_node": "0xd9966e13a6026Fcca4b13E7ff95c94DE268C471C",
+    "verified": true,
+    "model": "zai-org/GLM-5-FP8",
+    "measurement_hash": "",
+    "signature": null
+  },
+  "borrower_name": "Halloway Interiors",
+  "sector": "construction"
+}

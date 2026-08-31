@@ -1,0 +1,159 @@
+[
+  {
+    "borrower_id": "brw_01hx8k2m4n",
+    "name": "Meridian Components Ltd",
+    "sector": "manufacturing",
+    "archetype": "stable",
+    "payer_ids": [
+      "pay_helix",
+      "pay_summt",
+      "pay_nordm"
+    ],
+    "defaults": false,
+    "dark_feeds": []
+  },
+  {
+    "borrower_id": "brw_01hx9p3q7r",
+    "name": "Talbot Fresh Produce",
+    "sector": "food_beverage",
+    "archetype": "stable",
+    "payer_ids": [
+      "pay_atlas",
+      "pay_grtwl",
+      "pay_bluep"
+    ],
+    "defaults": false,
+    "dark_feeds": []
+  },
+  {
+    "borrower_id": "brw_01hxa4s8t2",
+    "name": "Ravensworth Medical Supply",
+    "sector": "healthcare",
+    "archetype": "stable",
+    "payer_ids": [
+      "pay_verid",
+      "pay_summt"
+    ],
+    "defaults": false,
+    "dark_feeds": []
+  },
+  {
+    "borrower_id": "brw_01hxb6u9v5",
+    "name": "Ardent Print & Packaging",
+    "sector": "manufacturing",
+    "archetype": "stable",
+    "payer_ids": [
+      "pay_grtwl",
+      "pay_bluep",
+      "pay_kestl"
+    ],
+    "defaults": false,
+    "dark_feeds": []
+  },
+  {
+    "borrower_id": "brw_01hxc7w2x8",
+    "name": "Pennington Textiles",
+    "sector": "apparel",
+    "archetype": "mild_decline",
+    "payer_ids": [
+      "pay_kestl",
+      "pay_grtwl",
+      "pay_atlas"
+    ],
+    "defaults": false,
+    "dark_feeds": []
+  },
+  {
+    "borrower_id": "brw_01hxd8y3z1",
+    "name": "Kingsley Civil Works",
+    "sector": "construction",
+    "archetype": "mild_decline",
+    "payer_ids": [
+      "pay_castr",
+      "pay_summt",
+      "pay_helix"
+    ],
+    "defaults": false,
+    "dark_feeds": []
+  },
+  {
+    "borrower_id": "brw_01hxe9a4b6",
+    "name": "Selwyn Transport Group",
+    "sector": "logistics",
+    "archetype": "mild_decline",
+    "payer_ids": [
+      "pay_orion",
+      "pay_nordm",
+      "pay_summt"
+    ],
+    "defaults": false,
+    "dark_feeds": []
+  },
+  {
+    "borrower_id": "brw_01hxf2c5d9",
+    "name": "Halloway Interiors",
+    "sector": "construction",
+    "archetype": "sharp_decline",
+    "payer_ids": [
+      "pay_cedar",
+      "pay_castr"
+    ],
+    "defaults": false,
+    "dark_feeds": []
+  },
+  {
+    "borrower_id": "brw_01hxg3e6f4",
+    "name": "Brightwater Seafood Co",
+    "sector": "food_beverage",
+    "archetype": "defaulting",
+    "payer_ids": [
+      "pay_bluep",
+      "pay_cedar",
+      "pay_atlas"
+    ],
+    "defaults": true,
+    "dark_feeds": []
+  },
+  {
+    "borrower_id": "brw_01hxh4g7h2",
+    "name": "Copperfield Engineering",
+    "sector": "industrial",
+    "archetype": "improving",
+    "payer_ids": [
+      "pay_summt",
+      "pay_helix",
+      "pay_lumen"
+    ],
+    "defaults": false,
+    "dark_feeds": []
+  },
+  {
+    "borrower_id": "brw_01hxj5i8k7",
+    "name": "Lowgate Renewables",
+    "sector": "energy",
+    "archetype": "improving",
+    "payer_ids": [
+      "pay_lumen",
+      "pay_verid",
+      "pay_nordm"
+    ],
+    "defaults": false,
+    "dark_feeds": []
+  },
+  {
+    "borrower_id": "brw_01hxk6j9m3",
+    "name": "Fenwick Industrial Spares",
+    "sector": "industrial",
+    "archetype": "feed_goes_dark",
+    "payer_ids": [
+      "pay_summt",
+      "pay_helix",
+      "pay_nordm"
+    ],
+    "defaults": false,
+    "dark_feeds": [
+      "accounting_feed",
+      "invoice_feed"
+    ]
+  }
+]

@@ -1,0 +1,218 @@
+{
+  "explainability_ref": "explain_4271f222372aff02",
+  "borrower_id": "brw_01hxg3e6f4",
+  "borrower_name": "Brightwater Seafood Co",
+  "as_of": "2026-07-13T23:19:00Z",
+  "published_at": "2026-07-13T23:19:00Z",
+  "model_version": "continuum-scoring-v0.1.0-wave3",
+  "model_artifact_sha256": "75cf7e9d7170645c8de273aa1f25da21a7d8a3811038c015ef58f4c6259ef7c3",
+  "trigger_reason": "scheduled_daily",
+  "scorer": "weighted_quant_v1",
+  "score_build_up": {
+    "pd": 0.4391,
+    "base_rate": 0.28,
+    "points_from_model": 629.34,
+    "llm_penalty": -0.0,
+    "points_after_llm": 629.34,
+    "staleness_penalty": -0.0,
+    "points_after_staleness": 629.34,
+    "grade_ceiling": 845.61,
+    "ceiling_binding": false,
+    "score_numeric": 629,
+    "grade": "BB",
+    "confidence_interval": [
+      578,
+      681
+    ],
+    "grade_band": [
+      610,
+      649
+    ]
+  },
+  "staleness": {
+    "silent": false,
+    "weighted_silence_days": 0.0,
+    "penalty_points": 0.0,
+    "per_feed_days": {
+      "invoice_feed": 0.0,
+      "bank_feed": 0.0,
+      "accounting_feed": 0.0,
+      "document_feed": 0.0,
+      "onchain_feed": 0.0
+    },
+    "worst_feed": "",
+    "worst_days": 0.0,
+    "never_reported": [],
+    "ratchet_ceiling": null,
+    "grace_hours": 48.0,
+    "points_per_weighted_day": 3.2,
+    "rule": "\u00a74 \u2014 silence is worsening information: the penalty is unbounded in duration and the ratchet forbids the score rising while a feed stays quiet.",
+    "notes": []
+  },
+  "feature_attribution": [
+    {
+      "_base_log_odds": 0.5,
+      "_feature_sum_log_odds": -0.29463,
+      "_units": "composite_health_index"
+    },
+    {
+      "feature": "days_sales_outstanding",
+      "value": 69.83,
+      "normalised": 0.0,
+      "weight": 0.25,
+      "contribution": -0.125,
+      "direction": "increases_risk",
+      "pivot": 45.0,
+      "share_of_total_abs": 0.3829
+    },
+    {
+      "feature": "revenue_trend_90d",
+      "value": -0.3349,
+      "normalised": 0.0,
+      "weight": 0.22,
+      "contribution": -0.11,
+      "direction": "increases_risk",
+      "pivot": 0.0,
+      "share_of_total_abs": 0.3369
+    },
+    {
+      "feature": "payer_concentration_top1_pct",
+      "value": 0.5679,
+      "normalised": 0.0803,
+      "weight": 0.18,
+      "contribution": -0.075555,
+      "direction": "increases_risk",
+      "pivot": 0.4,
+      "share_of_total_abs": 0.2314
+    },
+    {
+      "feature": "on_time_repayment_rate_180d",
+      "value": 0.9091,
+      "normalised": 0.5455,
+      "weight": 0.35,
+      "contribution": 0.015925,
+      "direction": "decreases_risk",
+      "pivot": 0.9,
+      "share_of_total_abs": 0.0488
+    }
+  ],
+  "features": {
+    "revenue_30d": 97951.58,
+    "revenue_trend_90d": -0.3349,
+    "days_sales_outstanding": 69.83,
+    "payer_concentration_top1_pct": 0.5679,
+    "on_time_repayment_rate_180d": 0.9091,
+    "days_since_last_late_payment": 58.0,
+    "revenue_volatility_90d": 0.5321,
+    "cash_runway_days": 125.4,
+    "invoice_volume_30d": 87940.69,
+    "avg_invoice_age_days": 44.3,
+    "dispute_rate_90d": 0.0237,
+    "late_payment_count_90d": 1.0,
+    "payment_velocity_ratio": 1.0466,
+    "payer_concentration_hhi": 0.4164,
+    "payer_payment_delay_trend_60d": 7.69,
+    "payer_risk_score": 0.7247,
+    "onchain_repayment_success_rate": 0.9459,
+    "onchain_existing_leverage_ratio": 2.556
+  },
+  "interval": {
+    "half_width_points": 51.46,
+    "base_half_width": 18.0,
+    "max_half_width": 140.0,
+    "capped": false,
+    "terms": {
+      "data_quality": 0.04,
+      "model_variance": 0.45,
+      "anomaly_pressure": 1.0,
+      "llm_confidence": 1.0
+    },
+    "term_contributions": {
+      "data_quality": 0.064,
+      "model_variance": 0.495,
+      "anomaly_pressure": 0.8,
+      "llm_confidence": 0.5
+    },
+    "ceiling_multiple": 3.0
+  },
+  "model_uncertainty": {
+    "novelty_share": 0.0,
+    "out_of_range_features": [],
+    "cv_auc_fold_std": 0.0,
+    "fold_std_saturation_ref": 0.1,
+    "n_train_rows": 0,
+    "n_train_borrowers": 0
+  },
+  "llm": {
+    "flags_raised": [],
+    "penalty_points": -0.0,
+    "penalty_cap": 150.0,
+    "confidence": 0.0,
+    "source": "offline_fixture",
+    "model_used": "",
+    "escalated": false,
+    "output_mode": "none",
+    "rationale": "No document assessment available: CONTINUUM_LLM_BACKEND=offline. Flags are neutral and carry zero confidence; they are not a model judgement.",
+    "evidence_refs": []
+  },
+  "anomaly": {
+    "triggered": true,
+    "trigger_reason": "event_repayment",
+    "pressure": 1.0,
+    "abstained": false,
+    "signals": [
+      {
+        "kind": "payment_lateness",
+        "feature": "repayment_timing",
+        "detail": "repayment rep_g3e6f4_033 settled 55d late vs borrower's own p90 of -0d (+55d beyond pattern)",
+        "severity": 1.0,
+        "value": 55.0198,
+        "baseline": -0.4348
+      }
+    ]
+  },
+  "data_quality": {
+    "score": 0.96,
+    "level": "fresh",
+    "degraded_feeds": [],
+    "feed_freshness": {
+      "invoice_feed": 1.0,
+      "bank_feed": 1.0,
+      "accounting_feed": 1.0,
+      "document_feed": 1.0,
+      "onchain_feed": 1.0
+    },
+    "source_freshness": {
+      "accounting_feed": "2026-07-12T12:07:28Z",
+      "bank_feed": "2026-07-13T03:11:25Z",
+      "invoice_feed": "2026-07-13T05:48:25Z",
+      "document_feed": "2026-07-04T08:34:52Z",
+      "onchain_feed": "2026-07-13T00:39:54Z"
+    }
+  },
+  "publish_decision": {
+    "published_onchain": true,
+    "reason": "grade moved BBB- -> BB",
+    "threshold_points": 10.0,
+    "cooldown_hours": 6,
+    "measured_against": {
+      "score_numeric": 667,
+      "score": "BBB-",
+      "published_at": "2026-07-06T23:33:00Z"
+    }
+  },
+  "attestation": {
+    "type": "none",
+    "provider": "not_attested",
+    "job_id": "",
+    "proof_ref": "",
+    "compute_node": "",
+    "verified": false,
+    "model": "",
+    "measurement_hash": "0x0bf7913f1346d9b7ac0a8fcddcbda34ead3b9c91accd19356a6db8ede285f7f7",
+    "signature": null
+  },
+  "attestation_summary": "no attestation \u2014 score computed locally, unverified (\u00a75.2 fallback)",
+  "input_digest": "fed0c39e626e0639bf93c66847ad154309fff9079277194dc57d99c494b8861a",
+  "trust_disclaimer": "Wave 3 is a single-operator system. The 0G Compute attestation covers the document reasoning call only: a TEE-held key signed that response and the broker verified the signature. The aggregation arithmetic ran off-chain on the operator's machine \u2014 the \u00a75.2 fallback, taken because 0G Compute serves inference against registered providers and does not execute arbitrary jobs. measurement_hash binds this score to one feature record and one scoring rule; it is tamper evidence, not a proof of honest execution, and nothing here is evidence that the underlying invoice data was real."
+}

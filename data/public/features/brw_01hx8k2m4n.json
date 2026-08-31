@@ -1,0 +1,64 @@
+{
+  "borrower_id": "brw_01hx8k2m4n",
+  "as_of": "2026-08-11T00:00:00Z",
+  "source_freshness": {
+    "accounting_feed": "2026-08-09T18:53:36.465548Z",
+    "bank_feed": "2026-08-10T20:24:19.848335Z",
+    "invoice_feed": "2026-08-10T21:17:09.603522Z",
+    "document_feed": "2026-08-03T18:57:34.036209Z",
+    "onchain_feed": "2026-08-10T19:34:47.219537Z"
+  },
+  "features": {
+    "revenue_30d": 125152.02,
+    "revenue_trend_90d": -0.4675,
+    "days_sales_outstanding": 42.87,
+    "payer_concentration_top1_pct": 0.3685,
+    "on_time_repayment_rate_180d": 1.0,
+    "days_since_last_late_payment": 296.0,
+    "revenue_volatility_90d": 0.2918,
+    "cash_runway_days": 69.7,
+    "invoice_volume_30d": 180191.09,
+    "avg_invoice_age_days": 25.7,
+    "dispute_rate_90d": 0.0142,
+    "late_payment_count_90d": 0.0,
+    "payment_velocity_ratio": 0.9794,
+    "payer_concentration_hhi": 0.3353,
+    "payer_payment_delay_trend_60d": -1.21,
+    "payer_risk_score": 0.8028,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 2.6504
+  },
+  "llm_flags": {
+    "covenant_breach": false,
+    "adverse_news_detected": false,
+    "confidence": 0.35,
+    "evidence_refs": [],
+    "payer_deterioration": false,
+    "rationale": "doc_8k2m4n_00 certifies all four covenants within thresholds and explicitly states no Event of Default has occurred, and doc_8k2m4n_01 reports stable trading with no material adverse events; no third-party news or payer distress is evidenced in either document. Confidence is low because only two self-reported documents exist, the most recent is over three months stale as of the assessment date, and there is no third-party corroboration.",
+    "source": "0g-compute",
+    "model_used": "zai-org/GLM-5-FP8",
+    "escalated": false,
+    "output_mode": "text_json"
+  },
+  "data_quality_score": 0.96,
+  "feed_freshness_detail": {
+    "invoice_feed": 1.0,
+    "bank_feed": 1.0,
+    "accounting_feed": 1.0,
+    "document_feed": 1.0,
+    "onchain_feed": 1.0
+  },
+  "compute_attestation": {
+    "type": "0g-compute",
+    "provider": "0g-compute-network",
+    "job_id": "0f12de7a-7750-4605-afec-f64d65421e83",
+    "proof_ref": "0x30663132646537612d373735302d343630352d616665632d6636346436353432",
+    "compute_node": "0xd9966e13a6026Fcca4b13E7ff95c94DE268C471C",
+    "verified": true,
+    "model": "zai-org/GLM-5-FP8",
+    "measurement_hash": "",
+    "signature": null
+  },
+  "borrower_name": "Meridian Components Ltd",
+  "sector": "manufacturing"
+}

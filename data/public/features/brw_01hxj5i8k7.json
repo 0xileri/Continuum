@@ -1,0 +1,64 @@
+{
+  "borrower_id": "brw_01hxj5i8k7",
+  "as_of": "2026-08-11T00:00:00Z",
+  "source_freshness": {
+    "accounting_feed": "2026-08-09T13:56:23.060201Z",
+    "bank_feed": "2026-08-10T06:07:35.364773Z",
+    "invoice_feed": "2026-08-10T22:47:32.183056Z",
+    "document_feed": "2026-08-03T07:59:38.155024Z",
+    "onchain_feed": "2026-08-10T02:20:05.951851Z"
+  },
+  "features": {
+    "revenue_30d": 267504.72,
+    "revenue_trend_90d": -0.0374,
+    "days_sales_outstanding": 51.8,
+    "payer_concentration_top1_pct": 0.4879,
+    "on_time_repayment_rate_180d": 1.0,
+    "days_since_last_late_payment": 365.0,
+    "revenue_volatility_90d": 0.2527,
+    "cash_runway_days": 67.3,
+    "invoice_volume_30d": 210393.85,
+    "avg_invoice_age_days": 27.6,
+    "dispute_rate_90d": 0.0,
+    "late_payment_count_90d": 0.0,
+    "payment_velocity_ratio": 0.9968,
+    "payer_concentration_hhi": 0.3767,
+    "payer_payment_delay_trend_60d": 0.59,
+    "payer_risk_score": 0.8681,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 1.3617
+  },
+  "llm_flags": {
+    "covenant_breach": false,
+    "adverse_news_detected": false,
+    "confidence": 0.3,
+    "evidence_refs": [],
+    "payer_deterioration": false,
+    "rationale": "Both documents are self-reported management accounts with no third-party corroboration, and the most recent is approximately four months stale relative to the assessment date. No document identifies a specific covenant breach, adverse third-party news, or current payer distress; the exited slow-paying accounts in doc_j5i8k7_00 describe a resolved historical issue.",
+    "source": "0g-compute",
+    "model_used": "zai-org/GLM-5-FP8",
+    "escalated": false,
+    "output_mode": "text_json"
+  },
+  "data_quality_score": 0.96,
+  "feed_freshness_detail": {
+    "invoice_feed": 1.0,
+    "bank_feed": 1.0,
+    "accounting_feed": 1.0,
+    "document_feed": 1.0,
+    "onchain_feed": 1.0
+  },
+  "compute_attestation": {
+    "type": "0g-compute",
+    "provider": "0g-compute-network",
+    "job_id": "8a04da2a-b251-4db6-bc78-a7a9ef65c4ef",
+    "proof_ref": "0x38613034646132612d623235312d346462362d626337382d6137613965663635",
+    "compute_node": "0xd9966e13a6026Fcca4b13E7ff95c94DE268C471C",
+    "verified": true,
+    "model": "zai-org/GLM-5-FP8",
+    "measurement_hash": "",
+    "signature": null
+  },
+  "borrower_name": "Lowgate Renewables",
+  "sector": "energy"
+}

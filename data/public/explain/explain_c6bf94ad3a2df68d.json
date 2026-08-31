@@ -1,0 +1,236 @@
+{
+  "explainability_ref": "explain_c6bf94ad3a2df68d",
+  "borrower_id": "brw_01hxf2c5d9",
+  "borrower_name": "Halloway Interiors",
+  "as_of": "2026-08-11T00:00:00Z",
+  "published_at": "2026-08-11T00:00:00Z",
+  "model_version": "continuum-scoring-v0.1.0-wave3",
+  "model_artifact_sha256": "75cf7e9d7170645c8de273aa1f25da21a7d8a3811038c015ef58f4c6259ef7c3",
+  "trigger_reason": "scheduled_daily",
+  "scorer": "weighted_quant_v1",
+  "score_build_up": {
+    "pd": 0.47676,
+    "base_rate": 0.28,
+    "points_from_model": 614.01,
+    "llm_penalty": -150.0,
+    "points_after_llm": 464.01,
+    "staleness_penalty": -0.0,
+    "points_after_staleness": 464.01,
+    "grade_ceiling": 911.76,
+    "ceiling_binding": false,
+    "score_numeric": 464,
+    "grade": "CCC",
+    "confidence_interval": [
+      435,
+      493
+    ],
+    "grade_band": [
+      400,
+      469
+    ]
+  },
+  "staleness": {
+    "silent": false,
+    "weighted_silence_days": 0.0,
+    "penalty_points": 0.0,
+    "per_feed_days": {
+      "invoice_feed": 0.0,
+      "bank_feed": 0.0,
+      "accounting_feed": 0.0,
+      "document_feed": 0.0,
+      "onchain_feed": 0.0
+    },
+    "worst_feed": "",
+    "worst_days": 0.0,
+    "never_reported": [],
+    "ratchet_ceiling": null,
+    "grace_hours": 48.0,
+    "points_per_weighted_day": 3.2,
+    "rule": "\u00a74 \u2014 silence is worsening information: the penalty is unbounded in duration and the ratchet forbids the score rising while a feed stays quiet.",
+    "notes": []
+  },
+  "feature_attribution": [
+    {
+      "_base_log_odds": 0.5,
+      "_feature_sum_log_odds": -0.36437,
+      "_units": "composite_health_index"
+    },
+    {
+      "feature": "days_sales_outstanding",
+      "value": 86.99,
+      "normalised": 0.0,
+      "weight": 0.25,
+      "contribution": -0.125,
+      "direction": "increases_risk",
+      "pivot": 45.0,
+      "share_of_total_abs": 0.3431
+    },
+    {
+      "feature": "on_time_repayment_rate_180d",
+      "value": 0.8462,
+      "normalised": 0.231,
+      "weight": 0.35,
+      "contribution": -0.09415,
+      "direction": "increases_risk",
+      "pivot": 0.9,
+      "share_of_total_abs": 0.2584
+    },
+    {
+      "feature": "payer_concentration_top1_pct",
+      "value": 0.7345,
+      "normalised": 0.0,
+      "weight": 0.18,
+      "contribution": -0.09,
+      "direction": "increases_risk",
+      "pivot": 0.4,
+      "share_of_total_abs": 0.247
+    },
+    {
+      "feature": "revenue_trend_90d",
+      "value": -0.1004,
+      "normalised": 0.249,
+      "weight": 0.22,
+      "contribution": -0.05522,
+      "direction": "increases_risk",
+      "pivot": 0.0,
+      "share_of_total_abs": 0.1515
+    }
+  ],
+  "features": {
+    "revenue_30d": 62320.62,
+    "revenue_trend_90d": -0.1004,
+    "days_sales_outstanding": 86.99,
+    "payer_concentration_top1_pct": 0.7345,
+    "on_time_repayment_rate_180d": 0.8462,
+    "days_since_last_late_payment": 44.0,
+    "revenue_volatility_90d": 0.1839,
+    "cash_runway_days": 68.5,
+    "invoice_volume_30d": 53527.39,
+    "avg_invoice_age_days": 50.0,
+    "dispute_rate_90d": 0.0709,
+    "late_payment_count_90d": 2.0,
+    "payment_velocity_ratio": 1.0489,
+    "payer_concentration_hhi": 0.61,
+    "payer_payment_delay_trend_60d": 8.77,
+    "payer_risk_score": 0.5906,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 3.2498
+  },
+  "interval": {
+    "half_width_points": 29.41,
+    "base_half_width": 18.0,
+    "max_half_width": 140.0,
+    "capped": false,
+    "terms": {
+      "data_quality": 0.04,
+      "model_variance": 0.45,
+      "anomaly_pressure": 0.0,
+      "llm_confidence": 0.15
+    },
+    "term_contributions": {
+      "data_quality": 0.064,
+      "model_variance": 0.495,
+      "anomaly_pressure": 0.0,
+      "llm_confidence": 0.075
+    },
+    "ceiling_multiple": 3.0
+  },
+  "model_uncertainty": {
+    "novelty_share": 0.0,
+    "out_of_range_features": [],
+    "cv_auc_fold_std": 0.0,
+    "fold_std_saturation_ref": 0.1,
+    "n_train_rows": 0,
+    "n_train_borrowers": 0
+  },
+  "llm": {
+    "flags_raised": [
+      "covenant_breach",
+      "payer_deterioration",
+      "adverse_news_detected"
+    ],
+    "penalty_points": -150.0,
+    "penalty_cap": 150.0,
+    "confidence": 0.85,
+    "source": "0g-compute",
+    "model_used": "zai-org/GLM-5-FP8",
+    "escalated": false,
+    "output_mode": "text_json",
+    "rationale": "doc_f2c5d9_00 is a self-reported breach notice stating two specific covenant failures \u00e2\u20ac\u201d Interest Cover Ratio 1.42x vs 2.00x minimum and Debtor Concentration 61% vs 45% maximum \u00e2\u20ac\u201d declared an Event of Default under Clause 24.2. doc_f2c5d9_02 is third-party trade press reporting restructuring advisers, lender talks, and credit-insurer cover cuts on the borrower, while doc_f2c5d9_01 is payer correspondence from Cedarbrook Hospitality disputing invoices and unilaterally extending payment terms to 90 days.",
+    "evidence_refs": [
+      "doc_f2c5d9_00",
+      "doc_f2c5d9_01",
+      "doc_f2c5d9_02"
+    ]
+  },
+  "anomaly": {
+    "triggered": false,
+    "trigger_reason": null,
+    "pressure": 0.0,
+    "abstained": false,
+    "signals": []
+  },
+  "data_quality": {
+    "score": 0.96,
+    "level": "fresh",
+    "degraded_feeds": [],
+    "feed_freshness": {
+      "invoice_feed": 1.0,
+      "bank_feed": 1.0,
+      "accounting_feed": 1.0,
+      "document_feed": 1.0,
+      "onchain_feed": 1.0
+    },
+    "source_freshness": {
+      "accounting_feed": "2026-08-09T12:21:00Z",
+      "bank_feed": "2026-08-10T00:27:15Z",
+      "invoice_feed": "2026-08-10T16:12:23Z",
+      "document_feed": "2026-08-03T00:29:16Z",
+      "onchain_feed": "2026-08-10T13:35:45Z"
+    }
+  },
+  "publish_decision": {
+    "published_onchain": true,
+    "reason": "attestation upgraded: this score carries a verified 0G Compute TEE signature and the published one does not",
+    "threshold_points": 10.0,
+    "cooldown_hours": 6,
+    "measured_against": {
+      "score_numeric": 602,
+      "score": "BB-",
+      "published_at": "2026-07-28T01:23:00Z"
+    }
+  },
+  "attestation": {
+    "type": "0g-compute",
+    "provider": "0g-compute-network",
+    "job_id": "91955c3e-75a7-45e2-886c-6ae254b273bb",
+    "proof_ref": "0x39313935356333652d373561372d343565322d383836632d3661653235346232",
+    "compute_node": "0xd9966e13a6026Fcca4b13E7ff95c94DE268C471C",
+    "verified": true,
+    "model": "zai-org/GLM-5-FP8",
+    "measurement_hash": "0x7a345ab2a34edb303741507ceadfc17cd4ad8ce5440df479b9ac938e2dcd046e",
+    "signature": null
+  },
+  "attestation_summary": "0G Compute verified \u00b7 provider 0xd9966e13a6\u2026 \u00b7 model zai-org/GLM-5-FP8 \u00b7 job 91955c3e-75a7-45\u2026",
+  "input_digest": "e0c9324a5712838e25ddd31f53c073621b38f7ddff928a516c0af9f480b0312b",
+  "trust_disclaimer": "Wave 3 is a single-operator system. The 0G Compute attestation covers the document reasoning call only: a TEE-held key signed that response and the broker verified the signature. The aggregation arithmetic ran off-chain on the operator's machine \u2014 the \u00a75.2 fallback, taken because 0G Compute serves inference against registered providers and does not execute arbitrary jobs. measurement_hash binds this score to one feature record and one scoring rule; it is tamper evidence, not a proof of honest execution, and nothing here is evidence that the underlying invoice data was real.",
+  "og": {
+    "storage": {
+      "ok": true,
+      "summary": "0G Storage 0xb161b74aa04635ea\u2026",
+      "root_hash": "0xb161b74aa04635eaf71a80b36ab076693e76c9893e3366718fdb84e16c0c6d0b",
+      "uri": "0g://0xb161b74aa04635eaf71a80b36ab076693e76c9893e3366718fdb84e16c0c6d0b",
+      "explorer_url": "https://storagescan.0g.ai/tx/0xb161b74aa04635eaf71a80b36ab076693e76c9893e3366718fdb84e16c0c6d0b",
+      "error": ""
+    },
+    "chain": {
+      "published": true,
+      "summary": "published 0xea924d6efd1f2feb\u2026 on 0g-chain-mainnet",
+      "rejected_by": "",
+      "seconds_remaining": 0,
+      "error": "",
+      "tx_hash": "0xea924d6efd1f2feb4c92ed3b2b8c82aca800fbb39a9818e78505c82d07be5188",
+      "explorer_url": "https://chainscan.0g.ai/tx/0xea924d6efd1f2feb4c92ed3b2b8c82aca800fbb39a9818e78505c82d07be5188"
+    }
+  }
+}

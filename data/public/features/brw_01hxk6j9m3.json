@@ -1,0 +1,64 @@
+{
+  "borrower_id": "brw_01hxk6j9m3",
+  "as_of": "2026-08-11T00:00:00Z",
+  "source_freshness": {
+    "accounting_feed": "2026-06-04T06:23:15.131984Z",
+    "bank_feed": "2026-08-10T12:04:59.205300Z",
+    "invoice_feed": "2026-06-05T03:44:37.673452Z",
+    "document_feed": "2026-08-03T20:03:45.614352Z",
+    "onchain_feed": "2026-08-10T05:02:36.665953Z"
+  },
+  "features": {
+    "revenue_30d": 100365.62,
+    "revenue_trend_90d": -0.4112,
+    "days_sales_outstanding": 45.43,
+    "payer_concentration_top1_pct": 0.4483,
+    "on_time_repayment_rate_180d": 1.0,
+    "days_since_last_late_payment": 365.0,
+    "revenue_volatility_90d": 0.2648,
+    "cash_runway_days": 71.8,
+    "invoice_volume_30d": 126017.39,
+    "avg_invoice_age_days": 21.5,
+    "dispute_rate_90d": 0.0656,
+    "late_payment_count_90d": 0.0,
+    "payment_velocity_ratio": 0.9762,
+    "payer_concentration_hhi": 0.3576,
+    "payer_payment_delay_trend_60d": 0.55,
+    "payer_risk_score": 0.8013,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 1.8441
+  },
+  "llm_flags": {
+    "covenant_breach": false,
+    "adverse_news_detected": false,
+    "confidence": 0.25,
+    "evidence_refs": [],
+    "payer_deterioration": false,
+    "rationale": "The only document, doc_k6j9m3_00, is a self-reported compliance certificate showing all covenants in compliance and no Event of Default as of December 2025, with no adverse news or payer deterioration referenced. Confidence is low because the sole document is self-reported, favourable to the borrower, uncorroborated by any third party, and approximately eight months stale relative to the assessment date.",
+    "source": "0g-compute",
+    "model_used": "zai-org/GLM-5-FP8",
+    "escalated": false,
+    "output_mode": "text_json"
+  },
+  "data_quality_score": 0.41,
+  "feed_freshness_detail": {
+    "invoice_feed": 0.0,
+    "bank_feed": 1.0,
+    "accounting_feed": 0.0,
+    "document_feed": 1.0,
+    "onchain_feed": 1.0
+  },
+  "compute_attestation": {
+    "type": "0g-compute",
+    "provider": "0g-compute-network",
+    "job_id": "85e96e16-f3fa-4019-87e4-efd951b79b5d",
+    "proof_ref": "0x38356539366531362d663366612d343031392d383765342d6566643935316237",
+    "compute_node": "0xd9966e13a6026Fcca4b13E7ff95c94DE268C471C",
+    "verified": true,
+    "model": "zai-org/GLM-5-FP8",
+    "measurement_hash": "",
+    "signature": null
+  },
+  "borrower_name": "Fenwick Industrial Spares",
+  "sector": "industrial"
+}

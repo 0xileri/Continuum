@@ -1,0 +1,64 @@
+{
+  "borrower_id": "brw_01hxe9a4b6",
+  "as_of": "2026-08-11T00:00:00Z",
+  "source_freshness": {
+    "accounting_feed": "2026-08-09T10:30:58.509053Z",
+    "bank_feed": "2026-08-10T09:47:48.526154Z",
+    "invoice_feed": "2026-08-10T22:54:17.449218Z",
+    "document_feed": "2026-08-03T17:23:36.696228Z",
+    "onchain_feed": "2026-08-10T13:13:06.183603Z"
+  },
+  "features": {
+    "revenue_30d": 120375.29,
+    "revenue_trend_90d": -0.1415,
+    "days_sales_outstanding": 56.21,
+    "payer_concentration_top1_pct": 0.4187,
+    "on_time_repayment_rate_180d": 0.9231,
+    "days_since_last_late_payment": 58.0,
+    "revenue_volatility_90d": 0.1104,
+    "cash_runway_days": 49.5,
+    "invoice_volume_30d": 128277.33,
+    "avg_invoice_age_days": 30.9,
+    "dispute_rate_90d": 0.0157,
+    "late_payment_count_90d": 1.0,
+    "payment_velocity_ratio": 0.9847,
+    "payer_concentration_hhi": 0.3477,
+    "payer_payment_delay_trend_60d": 0.58,
+    "payer_risk_score": 0.7751,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 2.4185
+  },
+  "llm_flags": {
+    "covenant_breach": false,
+    "adverse_news_detected": false,
+    "confidence": 0.35,
+    "evidence_refs": [],
+    "payer_deterioration": false,
+    "rationale": "The only document (doc_e9a4b6_00) is a self-reported compliance certificate showing all three covenants passing and explicitly stating no Event of Default has occurred; management commentary about narrowing headroom is a forecast of future pressure, not a breach. Confidence is low because the certificate is nearly six months stale, self-reported, and uncorroborated by any third-party source.",
+    "source": "0g-compute",
+    "model_used": "zai-org/GLM-5-FP8",
+    "escalated": false,
+    "output_mode": "text_json"
+  },
+  "data_quality_score": 0.96,
+  "feed_freshness_detail": {
+    "invoice_feed": 1.0,
+    "bank_feed": 1.0,
+    "accounting_feed": 1.0,
+    "document_feed": 1.0,
+    "onchain_feed": 1.0
+  },
+  "compute_attestation": {
+    "type": "0g-compute",
+    "provider": "0g-compute-network",
+    "job_id": "344838c4-0557-4861-8cfe-7975b8298dd8",
+    "proof_ref": "0x33343438333863342d303535372d343836312d386366652d3739373562383239",
+    "compute_node": "0xd9966e13a6026Fcca4b13E7ff95c94DE268C471C",
+    "verified": true,
+    "model": "zai-org/GLM-5-FP8",
+    "measurement_hash": "",
+    "signature": null
+  },
+  "borrower_name": "Selwyn Transport Group",
+  "sector": "logistics"
+}

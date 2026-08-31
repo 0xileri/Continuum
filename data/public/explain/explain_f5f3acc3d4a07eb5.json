@@ -1,0 +1,228 @@
+{
+  "explainability_ref": "explain_f5f3acc3d4a07eb5",
+  "borrower_id": "brw_01hxh4g7h2",
+  "borrower_name": "Copperfield Engineering",
+  "as_of": "2026-08-11T00:00:00Z",
+  "published_at": "2026-08-11T00:00:00Z",
+  "model_version": "continuum-scoring-v0.1.0-wave3",
+  "model_artifact_sha256": "75cf7e9d7170645c8de273aa1f25da21a7d8a3811038c015ef58f4c6259ef7c3",
+  "trigger_reason": "scheduled_daily",
+  "scorer": "weighted_quant_v1",
+  "score_build_up": {
+    "pd": 0.381647,
+    "base_rate": 0.28,
+    "points_from_model": 653.35,
+    "llm_penalty": -0.0,
+    "points_after_llm": 653.35,
+    "staleness_penalty": -0.0,
+    "points_after_staleness": 653.35,
+    "grade_ceiling": 898.26,
+    "ceiling_binding": false,
+    "score_numeric": 653,
+    "grade": "BBB-",
+    "confidence_interval": [
+      619,
+      687
+    ],
+    "grade_band": [
+      650,
+      689
+    ]
+  },
+  "staleness": {
+    "silent": false,
+    "weighted_silence_days": 0.0,
+    "penalty_points": 0.0,
+    "per_feed_days": {
+      "invoice_feed": 0.0,
+      "bank_feed": 0.0,
+      "accounting_feed": 0.0,
+      "document_feed": 0.0,
+      "onchain_feed": 0.0
+    },
+    "worst_feed": "",
+    "worst_days": 0.0,
+    "never_reported": [],
+    "ratchet_ceiling": null,
+    "grace_hours": 48.0,
+    "points_per_weighted_day": 3.2,
+    "rule": "\u00a74 \u2014 silence is worsening information: the penalty is unbounded in duration and the ratchet forbids the score rising while a feed stays quiet.",
+    "notes": []
+  },
+  "feature_attribution": [
+    {
+      "_base_log_odds": 0.5,
+      "_feature_sum_log_odds": -0.188235,
+      "_units": "composite_health_index"
+    },
+    {
+      "feature": "revenue_trend_90d",
+      "value": -0.2152,
+      "normalised": 0.0,
+      "weight": 0.22,
+      "contribution": -0.11,
+      "direction": "increases_risk",
+      "pivot": 0.0,
+      "share_of_total_abs": 0.4088
+    },
+    {
+      "feature": "payer_concentration_top1_pct",
+      "value": 0.5423,
+      "normalised": 0.1443,
+      "weight": 0.18,
+      "contribution": -0.064035,
+      "direction": "increases_risk",
+      "pivot": 0.4,
+      "share_of_total_abs": 0.238
+    },
+    {
+      "feature": "days_sales_outstanding",
+      "value": 53.74,
+      "normalised": 0.2815,
+      "weight": 0.25,
+      "contribution": -0.054625,
+      "direction": "increases_risk",
+      "pivot": 45.0,
+      "share_of_total_abs": 0.203
+    },
+    {
+      "feature": "on_time_repayment_rate_180d",
+      "value": 0.9231,
+      "normalised": 0.6155,
+      "weight": 0.35,
+      "contribution": 0.040425,
+      "direction": "decreases_risk",
+      "pivot": 0.9,
+      "share_of_total_abs": 0.1502
+    }
+  ],
+  "features": {
+    "revenue_30d": 71887.29,
+    "revenue_trend_90d": -0.2152,
+    "days_sales_outstanding": 53.74,
+    "payer_concentration_top1_pct": 0.5423,
+    "on_time_repayment_rate_180d": 0.9231,
+    "days_since_last_late_payment": 114.0,
+    "revenue_volatility_90d": 0.2425,
+    "cash_runway_days": 55.1,
+    "invoice_volume_30d": 94022.69,
+    "avg_invoice_age_days": 31.6,
+    "dispute_rate_90d": 0.0412,
+    "late_payment_count_90d": 0.0,
+    "payment_velocity_ratio": 0.9501,
+    "payer_concentration_hhi": 0.3998,
+    "payer_payment_delay_trend_60d": -5.65,
+    "payer_risk_score": 0.8099,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 2.3371
+  },
+  "interval": {
+    "half_width_points": 33.91,
+    "base_half_width": 18.0,
+    "max_half_width": 140.0,
+    "capped": false,
+    "terms": {
+      "data_quality": 0.04,
+      "model_variance": 0.45,
+      "anomaly_pressure": 0.0,
+      "llm_confidence": 0.65
+    },
+    "term_contributions": {
+      "data_quality": 0.064,
+      "model_variance": 0.495,
+      "anomaly_pressure": 0.0,
+      "llm_confidence": 0.325
+    },
+    "ceiling_multiple": 3.0
+  },
+  "model_uncertainty": {
+    "novelty_share": 0.0,
+    "out_of_range_features": [],
+    "cv_auc_fold_std": 0.0,
+    "fold_std_saturation_ref": 0.1,
+    "n_train_rows": 0,
+    "n_train_borrowers": 0
+  },
+  "llm": {
+    "flags_raised": [],
+    "penalty_points": -0.0,
+    "penalty_cap": 150.0,
+    "confidence": 0.35,
+    "source": "0g-compute",
+    "model_used": "zai-org/GLM-5-FP8",
+    "escalated": false,
+    "output_mode": "text_json",
+    "rationale": "The sole document (doc_h4g7h2_00) is a self-reported management account that explicitly states no Event of Default subsists and that covenant headroom is comfortable, but it is uncorroborated by any third party and references a now-completed remediation plan without detail. With only one favourable self-reported document, confidence in all flags is low.",
+    "evidence_refs": []
+  },
+  "anomaly": {
+    "triggered": false,
+    "trigger_reason": null,
+    "pressure": 0.0,
+    "abstained": false,
+    "signals": []
+  },
+  "data_quality": {
+    "score": 0.96,
+    "level": "fresh",
+    "degraded_feeds": [],
+    "feed_freshness": {
+      "invoice_feed": 1.0,
+      "bank_feed": 1.0,
+      "accounting_feed": 1.0,
+      "document_feed": 1.0,
+      "onchain_feed": 1.0
+    },
+    "source_freshness": {
+      "accounting_feed": "2026-08-09T05:01:54Z",
+      "bank_feed": "2026-08-10T09:00:48Z",
+      "invoice_feed": "2026-08-10T21:35:57Z",
+      "document_feed": "2026-08-03T02:24:03Z",
+      "onchain_feed": "2026-08-10T03:54:10Z"
+    }
+  },
+  "publish_decision": {
+    "published_onchain": true,
+    "reason": "attestation upgraded: this score carries a verified 0G Compute TEE signature and the published one does not",
+    "threshold_points": 10.0,
+    "cooldown_hours": 6,
+    "measured_against": {
+      "score_numeric": 653,
+      "score": "BBB-",
+      "published_at": "2026-08-10T22:35:00Z"
+    }
+  },
+  "attestation": {
+    "type": "0g-compute",
+    "provider": "0g-compute-network",
+    "job_id": "51000d8f-3e21-4a53-b8d5-49935c1ac033",
+    "proof_ref": "0x35313030306438662d336532312d346135332d623864352d3439393335633161",
+    "compute_node": "0xd9966e13a6026Fcca4b13E7ff95c94DE268C471C",
+    "verified": true,
+    "model": "zai-org/GLM-5-FP8",
+    "measurement_hash": "0x5fe9b9d8ddf16f583e36a49e69f81c6184f8ce307fa1ef3011001dc5e3d9cdf5",
+    "signature": null
+  },
+  "attestation_summary": "0G Compute verified \u00b7 provider 0xd9966e13a6\u2026 \u00b7 model zai-org/GLM-5-FP8 \u00b7 job 51000d8f-3e21-4a\u2026",
+  "input_digest": "6ce19e97b1a067c70fd0bdff6c944dd56bed96193f068e03d295b4fb340d2f46",
+  "trust_disclaimer": "Wave 3 is a single-operator system. The 0G Compute attestation covers the document reasoning call only: a TEE-held key signed that response and the broker verified the signature. The aggregation arithmetic ran off-chain on the operator's machine \u2014 the \u00a75.2 fallback, taken because 0G Compute serves inference against registered providers and does not execute arbitrary jobs. measurement_hash binds this score to one feature record and one scoring rule; it is tamper evidence, not a proof of honest execution, and nothing here is evidence that the underlying invoice data was real.",
+  "og": {
+    "storage": {
+      "ok": true,
+      "summary": "0G Storage 0x48870ab5bcf4b354\u2026",
+      "root_hash": "0x48870ab5bcf4b354b42d18b378fd467728b7cabfdb17fa7c84a527cb92f140de",
+      "uri": "0g://0x48870ab5bcf4b354b42d18b378fd467728b7cabfdb17fa7c84a527cb92f140de",
+      "explorer_url": "https://storagescan.0g.ai/tx/0x48870ab5bcf4b354b42d18b378fd467728b7cabfdb17fa7c84a527cb92f140de",
+      "error": ""
+    },
+    "chain": {
+      "published": true,
+      "summary": "published 0x24066ef3df08d523\u2026 on 0g-chain-mainnet",
+      "rejected_by": "",
+      "seconds_remaining": 0,
+      "error": "",
+      "tx_hash": "0x24066ef3df08d5238df8100ff651741fe96073415109de79259852d6a88d5c31",
+      "explorer_url": "https://chainscan.0g.ai/tx/0x24066ef3df08d5238df8100ff651741fe96073415109de79259852d6a88d5c31"
+    }
+  }
+}

@@ -599,6 +599,19 @@ haircut schedule is not the same kind of object."""
 # API read layer (ASSUMPTIONS #15) and the §11 dispute path (ASSUMPTIONS #13)
 # --------------------------------------------------------------------------------------
 
+API_READ_ONLY = os.getenv("CONTINUUM_API_READ_ONLY", "") == "1"
+"""Serve the published record and refuse every write.
+
+Set on any publicly reachable instance. The dispute endpoint is the only write surface, and it
+re-reads documents on the escalation model — which on the ``0g-compute`` backend spends from the
+operator's 0G Compute ledger. An unauthenticated endpoint that spends a funded ledger is a
+denial-of-wallet, and ``DISPUTE_REASSESS_COOLDOWN_MINUTES`` only rate-limits it rather than closing
+it. This closes it.
+
+It also removes the only code path that reads the raw event tables, so a read-only deployment needs
+no parquet engine and no raw data at all — just the published scores, feature records and
+explanations, which are exactly the artifacts this product claims are auditable."""
+
 API_ALLOW_REMOTE = os.getenv("CONTINUUM_API_ALLOW_REMOTE", "") == "1"
 """ASSUMPTIONS #15 says the API is unauthenticated and localhost-only. That is a deployment note
 nobody reads, so ``continuum.api`` also *enforces* it: non-loopback peers get 403 unless this is

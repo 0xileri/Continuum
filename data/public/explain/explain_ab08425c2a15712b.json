@@ -1,0 +1,229 @@
+{
+  "explainability_ref": "explain_ab08425c2a15712b",
+  "borrower_id": "brw_01hxa4s8t2",
+  "borrower_name": "Ravensworth Medical Supply",
+  "as_of": "2026-08-11T00:00:00Z",
+  "published_at": "2026-08-11T00:00:00Z",
+  "model_version": "continuum-scoring-v0.1.0-wave3",
+  "model_artifact_sha256": "75cf7e9d7170645c8de273aa1f25da21a7d8a3811038c015ef58f4c6259ef7c3",
+  "trigger_reason": "scheduled_daily",
+  "scorer": "weighted_quant_v1",
+  "score_build_up": {
+    "pd": 0.31,
+    "base_rate": 0.28,
+    "points_from_model": 685.42,
+    "llm_penalty": -0.0,
+    "points_after_llm": 685.42,
+    "staleness_penalty": -0.0,
+    "points_after_staleness": 685.42,
+    "grade_ceiling": 888.81,
+    "ceiling_binding": false,
+    "score_numeric": 685,
+    "grade": "BBB-",
+    "confidence_interval": [
+      648,
+      722
+    ],
+    "grade_band": [
+      650,
+      689
+    ]
+  },
+  "staleness": {
+    "silent": false,
+    "weighted_silence_days": 0.0,
+    "penalty_points": 0.0,
+    "per_feed_days": {
+      "invoice_feed": 0.0,
+      "bank_feed": 0.0,
+      "accounting_feed": 0.0,
+      "document_feed": 0.0,
+      "onchain_feed": 0.0
+    },
+    "worst_feed": "",
+    "worst_days": 0.0,
+    "never_reported": [],
+    "ratchet_ceiling": null,
+    "grace_hours": 48.0,
+    "points_per_weighted_day": 3.2,
+    "rule": "\u00a74 \u2014 silence is worsening information: the penalty is unbounded in duration and the ratchet forbids the score rising while a feed stays quiet.",
+    "notes": []
+  },
+  "feature_attribution": [
+    {
+      "_base_log_odds": 0.5,
+      "_feature_sum_log_odds": -0.055555,
+      "_units": "composite_health_index"
+    },
+    {
+      "feature": "payer_concentration_top1_pct",
+      "value": 0.6566,
+      "normalised": 0.0,
+      "weight": 0.18,
+      "contribution": -0.09,
+      "direction": "increases_risk",
+      "pivot": 0.4,
+      "share_of_total_abs": 0.5876
+    },
+    {
+      "feature": "on_time_repayment_rate_180d",
+      "value": 0.9231,
+      "normalised": 0.6155,
+      "weight": 0.35,
+      "contribution": 0.040425,
+      "direction": "decreases_risk",
+      "pivot": 0.9,
+      "share_of_total_abs": 0.2639
+    },
+    {
+      "feature": "revenue_trend_90d",
+      "value": -0.0261,
+      "normalised": 0.4347,
+      "weight": 0.22,
+      "contribution": -0.014355,
+      "direction": "increases_risk",
+      "pivot": 0.0,
+      "share_of_total_abs": 0.0937
+    },
+    {
+      "feature": "days_sales_outstanding",
+      "value": 43.66,
+      "normalised": 0.5335,
+      "weight": 0.25,
+      "contribution": 0.008375,
+      "direction": "decreases_risk",
+      "pivot": 45.0,
+      "share_of_total_abs": 0.0547
+    }
+  ],
+  "features": {
+    "revenue_30d": 329083.94,
+    "revenue_trend_90d": -0.0261,
+    "days_sales_outstanding": 43.66,
+    "payer_concentration_top1_pct": 0.6566,
+    "on_time_repayment_rate_180d": 0.9231,
+    "days_since_last_late_payment": 44.0,
+    "revenue_volatility_90d": 0.0488,
+    "cash_runway_days": 71.6,
+    "invoice_volume_30d": 284378.11,
+    "avg_invoice_age_days": 22.7,
+    "dispute_rate_90d": 0.0139,
+    "late_payment_count_90d": 1.0,
+    "payment_velocity_ratio": 0.9482,
+    "payer_concentration_hhi": 0.5491,
+    "payer_payment_delay_trend_60d": -0.79,
+    "payer_risk_score": 0.8722,
+    "onchain_repayment_success_rate": 1.0,
+    "onchain_existing_leverage_ratio": 1.3238
+  },
+  "interval": {
+    "half_width_points": 37.06,
+    "base_half_width": 18.0,
+    "max_half_width": 140.0,
+    "capped": false,
+    "terms": {
+      "data_quality": 0.04,
+      "model_variance": 0.45,
+      "anomaly_pressure": 0.0,
+      "llm_confidence": 1.0
+    },
+    "term_contributions": {
+      "data_quality": 0.064,
+      "model_variance": 0.495,
+      "anomaly_pressure": 0.0,
+      "llm_confidence": 0.5
+    },
+    "ceiling_multiple": 3.0
+  },
+  "model_uncertainty": {
+    "novelty_share": 0.0,
+    "out_of_range_features": [],
+    "cv_auc_fold_std": 0.0,
+    "fold_std_saturation_ref": 0.1,
+    "n_train_rows": 0,
+    "n_train_borrowers": 0
+  },
+  "llm": {
+    "flags_raised": [],
+    "penalty_points": -0.0,
+    "penalty_cap": 150.0,
+    "confidence": 0.0,
+    "source": "offline_fixture",
+    "model_used": "",
+    "escalated": false,
+    "output_mode": "none",
+    "rationale": "No document assessment available: 0G Compute failed: inference request failed: HTTP 400 {\"error\":\"validate request: insufficient balance: your locked balance is 0.125000 0G, but the required minimum is 1.000000 0G (breakdown: minimum reserve 1.000000 0G + unsettled fees 0.000000 0G + current request fee 0.000000 0G). Please add more funds with: 0g-compute-cli transfer-fund --provider 0xa48f01287233509FD694a22Bf840225062E67836 --amount \\u003camount\\u003e\"}. Flags are neutral and carry zero confidence; they are not a model judgement.",
+    "evidence_refs": []
+  },
+  "anomaly": {
+    "triggered": false,
+    "trigger_reason": null,
+    "pressure": 0.0,
+    "abstained": false,
+    "signals": []
+  },
+  "data_quality": {
+    "score": 0.96,
+    "level": "fresh",
+    "degraded_feeds": [],
+    "feed_freshness": {
+      "invoice_feed": 1.0,
+      "bank_feed": 1.0,
+      "accounting_feed": 1.0,
+      "document_feed": 1.0,
+      "onchain_feed": 1.0
+    },
+    "source_freshness": {
+      "accounting_feed": "2026-08-09T09:51:20Z",
+      "bank_feed": "2026-08-10T06:53:03Z",
+      "invoice_feed": "2026-08-10T04:41:10Z",
+      "document_feed": "2026-08-03T11:47:45Z",
+      "onchain_feed": "2026-08-10T02:36:40Z"
+    }
+  },
+  "publish_decision": {
+    "published_onchain": false,
+    "reason": "0pt drift from published 685 is under the 10pt threshold; recorded, not republished",
+    "threshold_points": 10.0,
+    "cooldown_hours": 6,
+    "measured_against": {
+      "score_numeric": 685,
+      "score": "BBB-",
+      "published_at": "2026-08-10T23:03:00Z"
+    },
+    "forced": "--force-publish: the off-chain gate held this score, and a deliberate proof run overrode it. The on-chain cooldown still applies."
+  },
+  "attestation": {
+    "type": "none",
+    "provider": "not_attested",
+    "job_id": "",
+    "proof_ref": "",
+    "compute_node": "",
+    "verified": false,
+    "model": "",
+    "measurement_hash": "0x4a2aa696d1dd85424fba25aa55e5f79e8f8dd7a2aa5302b4da5acc39a4cd27ed",
+    "signature": null
+  },
+  "attestation_summary": "no attestation \u2014 score computed locally, unverified (\u00a75.2 fallback)",
+  "input_digest": "d48cc7d8fc36324bc96484daf8399e97bff94116452560c23421c640751d5b4f",
+  "trust_disclaimer": "Wave 3 is a single-operator system. The 0G Compute attestation covers the document reasoning call only: a TEE-held key signed that response and the broker verified the signature. The aggregation arithmetic ran off-chain on the operator's machine \u2014 the \u00a75.2 fallback, taken because 0G Compute serves inference against registered providers and does not execute arbitrary jobs. measurement_hash binds this score to one feature record and one scoring rule; it is tamper evidence, not a proof of honest execution, and nothing here is evidence that the underlying invoice data was real.",
+  "og": {
+    "storage": {
+      "ok": true,
+      "summary": "0G Storage 0xadd077326f02ff97\u2026",
+      "root_hash": "0xadd077326f02ff97ff14fce58e11581ee17779e64edaa1db0d12769be9a82217",
+      "uri": "0g://0xadd077326f02ff97ff14fce58e11581ee17779e64edaa1db0d12769be9a82217",
+      "explorer_url": "https://storagescan.0g.ai/tx/0xadd077326f02ff97ff14fce58e11581ee17779e64edaa1db0d12769be9a82217",
+      "error": ""
+    },
+    "chain": {
+      "published": false,
+      "summary": "not published \u2014 Error: could not coalesce error (error={ \"code\": -32000, \"message\": \"no matching receipts found: this may indicate potential data corruption\" }, payload={ \"id\": 15, \"jsonrpc\": \"2.0\", \"method\": \"eth_getTransactionReceipt\", \"params\": [ \"0x27a3aac1fbc77e91b4473a448eaf80e016cd45544b0768a389bed7aed0f0bc0b\" ] }, code=UNKNOWN_ERROR, version=6.13.1)\n    at makeError (file:///C:/Users/promi/Continuum/og-bridge/node_modules/ethers/lib.esm/utils/errors.js:124:21)\n    at JsonRpcProvider.getRpcError (file:///C:/Users/promi/Continuum/og-bridge/node_modules/ethers/lib.esm/providers/provider-jsonrpc.js:726:16)\n    at file:///C:/Users/promi/Continuum/og-bridge/node_modules/ethers/lib.esm/providers/provider-jsonrpc.js:298:45\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+      "rejected_by": "",
+      "seconds_remaining": 0,
+      "error": "Error: could not coalesce error (error={ \"code\": -32000, \"message\": \"no matching receipts found: this may indicate potential data corruption\" }, payload={ \"id\": 15, \"jsonrpc\": \"2.0\", \"method\": \"eth_getTransactionReceipt\", \"params\": [ \"0x27a3aac1fbc77e91b4473a448eaf80e016cd45544b0768a389bed7aed0f0bc0b\" ] }, code=UNKNOWN_ERROR, version=6.13.1)\n    at makeError (file:///C:/Users/promi/Continuum/og-bridge/node_modules/ethers/lib.esm/utils/errors.js:124:21)\n    at JsonRpcProvider.getRpcError (file:///C:/Users/promi/Continuum/og-bridge/node_modules/ethers/lib.esm/providers/provider-jsonrpc.js:726:16)\n    at file:///C:/Users/promi/Continuum/og-bridge/node_modules/ethers/lib.esm/providers/provider-jsonrpc.js:298:45\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+      "tx_hash": "",
+      "explorer_url": ""
+    }
+  }
+}
