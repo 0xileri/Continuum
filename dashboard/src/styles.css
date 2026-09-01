@@ -2,45 +2,57 @@
    utility framework would be more machinery than the whole frontend. */
 
 :root {
-  /* Instrument panel, not institution. The ground is a cool near-black rather than a neutral one —
-     a pure grey reads as unconsidered next to a teal trace. See the identity sheet. */
+  /* ---- ground: the mark's own square ------------------------------------------------ */
   --bg: #0A0F13;
-  --panel: #121A20;
-  --panel-2: #18222A;
+  --panel: #101820;
+  --panel-2: #16212A;
   --line: #24313A;
-  --line-soft: #1B252C;
-  --text: #E4EDF0;
-  --muted: #93A5AE;
-  --dim: #697C86;
+  --line-soft: #1A242C;
 
-  /* Semantic only. On this product colour is data: these mean a borrower is deteriorating, not
-     that a designer wanted variety. Never use them decoratively.
+  /* ---- ink: the cool near-white the teal is legible against ------------------------- */
+  --text: #E6EFF1;
+  --muted: #8FA5AC;
+  --dim: #62767F;
 
-     The ramp starts at the brand trace and warms as it descends, and — this is the part that was
-     wrong before — SATURATION RISES WITH SEVERITY. `watch` covers BB/BB-/B, which is the modal
-     band in a distressed cohort, so a saturated amber there made the whole surface shout about its
-     most ordinary borrowers while the genuinely failing ones had nothing louder left to say. The
-     mid-tones are muted ochre and clay now; full-intensity vermilion is reserved for the bottom,
-     where it means something. */
-  --strong: #5FC9A8;
-  --good: #6FD3C7;
-  --watch: #C9A46A;
-  --weak: #D0805A;
-  --bad: #E2603F;
-  --neutral: #7C8D96;
-
-  /* The one accent, spent on the score trace and nothing else. */
+  /* ---- the single hue, taken from the mark ------------------------------------------ */
   --accent: #6FD3C7;
-  --accent-soft: rgba(111, 211, 199, 0.13);
-  --accent-line: rgba(111, 211, 199, 0.38);
-  --band: rgba(111, 211, 199, 0.26);
+  --accent-soft: rgba(111, 211, 199, 0.10);
+  --accent-line: rgba(111, 211, 199, 0.32);
+  --band: rgba(111, 211, 199, 0.24);
+
+  /* ---- severity, encoded within the brand hue ---------------------------------------
+     Only the mark's colours are used, so severity cannot be carried by hue. It is carried
+     by SATURATION AND LUMINANCE instead: a healthy borrower sits deep and calm, receding
+     into the ground; a failing one is drained of colour and pushed toward the light, where
+     it separates from everything around it.
+
+     Reading brightness as alarm is the instrument-panel convention this design already
+     borrows — a signal that has lost its colour and gone pale is a signal in trouble. The
+     honest cost is that hue no longer distinguishes grades, so the letter and the position
+     on the scale do more work than they did. See DESIGN.md. */
+  --strong: #2F6F68;
+  --good: #45A79B;
+  --watch: #6FD3C7;
+  --weak: #A6E7DD;
+  --bad: #DFF7F2;
+  --neutral: #5C7079;
 
   --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --sans: Archivo, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
   --serif: Newsreader, Georgia, 'Times New Roman', serif;
 
-  --radius: 10px;
-  --shadow: 0 1px 2px rgba(0,0,0,.45), 0 10px 28px rgba(0,0,0,.28);
+  /* ---- an 8px spacing scale, so rhythm is chosen rather than improvised -------------- */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 1px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.24);
 }
 
 * {
@@ -733,4 +745,338 @@ button:focus-visible,
     padding-left: 8px;
     padding-right: 8px;
   }
+}
+
+/* ==========================================================================================
+   Refinement pass
+   ------------------------------------------------------------------------------------------
+   The layer that separates a themed interface from a designed one. Nothing here introduces a
+   colour; it is all rhythm, hierarchy and restraint.
+   ========================================================================================== */
+
+/* ---- vertical rhythm -------------------------------------------------------------------
+   Panels sat on a flat 16px gap regardless of what they contained, so a three-row table and a
+   full explainability trail were spaced identically and the page read as an undifferentiated
+   stack. Sections now breathe on the 8px scale, and the gap between them is larger than the
+   gap within them — which is what makes groups legible as groups. */
+
+.main {
+  padding: var(--s5) var(--s6) var(--s7);
+  max-width: 1180px;
+}
+
+.panel {
+  padding: var(--s5);
+  margin-bottom: var(--s5);
+  border-radius: var(--radius);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.panel > h2 {
+  margin-bottom: var(--s1);
+}
+
+.panel > .note {
+  margin-bottom: var(--s4);
+  max-width: 62ch;
+}
+
+/* ---- the masthead ----------------------------------------------------------------------
+   The mark and the wordmark now share a baseline and a measured gap rather than sitting in a
+   loose flex row, and the version string is pushed down into its own register. */
+
+.masthead {
+  padding: var(--s5) var(--s4) var(--s4);
+  gap: var(--s3);
+  align-items: center;
+}
+
+.masthead .mark {
+  width: 38px;
+  height: 38px;
+  margin-top: 0;
+  border-radius: 10px;
+}
+
+.masthead h1 {
+  font-size: 21px;
+  letter-spacing: -0.04em;
+}
+
+.masthead p {
+  font-size: 11px;
+  letter-spacing: 0.01em;
+  color: var(--dim);
+}
+
+.masthead .ver {
+  margin-top: var(--s2);
+  opacity: 0.75;
+}
+
+/* ---- roster ----------------------------------------------------------------------------
+   Rows were separated by hover colour alone, so the list read as one block. A hairline between
+   them and a left rail on the selected row give the eye an edge to follow, and the rail means
+   selection survives even where the fill is subtle. */
+
+.roster {
+  padding: var(--s2);
+}
+
+.roster-item {
+  padding: var(--s3) var(--s3);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid transparent;
+  transition: background-color .12s ease, border-color .12s ease;
+}
+
+.roster-item + .roster-item {
+  border-top: 1px solid var(--line-soft);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.roster-item:hover {
+  background: var(--panel-2);
+}
+
+.roster-item.selected {
+  background: var(--accent-soft);
+  border-left-color: var(--accent);
+  border-color: transparent;
+  border-left-width: 2px;
+}
+
+.roster-item .name {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* ---- headline numbers ------------------------------------------------------------------
+   The score is the single most important number on the page and was set at the same weight as
+   its neighbours. It now leads, with the others stepping down behind it. */
+
+.detail-head {
+  gap: var(--s4);
+  margin-bottom: var(--s5);
+  padding-bottom: var(--s4);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.headline-numbers {
+  gap: var(--s5);
+}
+
+.stat .value {
+  font-family: var(--mono);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.stat .value.sm {
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.stat .label {
+  margin-bottom: var(--s1);
+}
+
+/* ---- tables ----------------------------------------------------------------------------
+   Heavier row padding and a quieter header. A table is read down a column, so the horizontal
+   rules were doing more work than they needed to. */
+
+table.data th {
+  padding-top: var(--s2);
+  padding-bottom: var(--s2);
+  border-bottom: 1px solid var(--line);
+  color: var(--dim);
+  font-weight: 500;
+}
+
+table.data td {
+  padding-top: 9px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+table.data tr:last-child td {
+  border-bottom: 0;
+}
+
+table.data tbody tr {
+  transition: background-color .1s ease;
+}
+
+table.data tbody tr:hover {
+  background: var(--panel-2);
+}
+
+/* ---- grade chip ------------------------------------------------------------------------
+   With severity carried by luminance, the chip has to read against the ground at both ends of
+   the scale. Dark text on a pale chip, light text on a deep one — chosen per tone rather than
+   fixed, so a distressed grade is the brightest thing in the roster and a healthy one recedes. */
+
+.grade {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.grade.strong,
+.grade.good {
+  color: var(--text);
+}
+
+.grade.watch,
+.grade.weak,
+.grade.bad {
+  color: var(--bg);
+}
+
+/* ---- badges ----------------------------------------------------------------------------
+   Quieter, and sized to sit on a text baseline rather than interrupt it. */
+
+.badge {
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+}
+
+/* ---- callouts --------------------------------------------------------------------------
+   Left rail thinned; the border was competing with the panel edges around it. */
+
+.callout {
+  border-radius: var(--radius-sm);
+  border-left-width: 2px;
+  padding: var(--s3) var(--s4);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.callout.trust {
+  font-family: var(--serif);
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+.callout.trust strong {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+/* ---- links ------------------------------------------------------------------------------
+   Underlines only on hover. A table of twenty transaction hashes with every one underlined is
+   a page of noise; the mono face and the accent already say "link". */
+
+a {
+  text-decoration: none;
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---- selection --------------------------------------------------------------------------- */
+
+::selection {
+  background: var(--accent-line);
+  color: var(--bg);
+}
+
+/* ---- scrollbars -------------------------------------------------------------------------
+   The default light scrollbar on a near-black ground is the loudest thing on the page. */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 6px;
+  border: 3px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neutral);
+}
+
+/* ---- grade chip: severity without hue ---------------------------------------------------
+   Restricted to the mark's palette, luminance alone was not enough — five steps in one hue put
+   BB-, BBB- and B within a few percent of each other, and the roster stopped being scannable.
+
+   So the chip carries severity on a second axis as well: WEIGHT. A healthy grade is an outline
+   that recedes into the panel; a distressed one is a solid block that advances off it. The
+   progression is quiet-hairline -> tinted -> solid -> bright-solid, which reads as escalation at
+   a glance and survives being the only hue on the page.
+
+   This is the same instinct as the mark itself — the trace is drawn brighter than the band around
+   it because it is the thing you are meant to look at. */
+
+.grade {
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.grade.strong {
+  color: var(--strong);
+  border-color: color-mix(in srgb, var(--strong) 55%, transparent);
+  background: color-mix(in srgb, var(--strong) 12%, transparent);
+}
+
+.grade.good {
+  color: var(--good);
+  border-color: color-mix(in srgb, var(--good) 55%, transparent);
+  background: color-mix(in srgb, var(--good) 14%, transparent);
+}
+
+.grade.watch {
+  color: var(--watch);
+  border-color: color-mix(in srgb, var(--watch) 70%, transparent);
+  background: color-mix(in srgb, var(--watch) 20%, transparent);
+}
+
+/* Solid from here down: the two bands a lender has to notice. */
+.grade.weak {
+  color: var(--bg);
+  background: var(--weak);
+  border-color: var(--weak);
+}
+
+.grade.bad {
+  color: var(--bg);
+  background: var(--bad);
+  border-color: var(--bad);
+  font-weight: 700;
+}
+
+.grade.neutral {
+  color: var(--dim);
+  border-color: var(--line);
+}
+
+/* The large chip in the detail header keeps the same logic at scale. */
+.grade.lg {
+  padding: 4px 12px;
+  border-radius: 8px;
 }

@@ -291,34 +291,52 @@ def _og_meta() -> dict:
 
 @app.get("/og", tags=["0g"])
 def og_status() -> dict:
-    """0G integration status — §10's Integration Proof, as data the dashboard can render."""
+    """0G integration status — §10's Integration Proof, as data the dashboard can render.
+
+    Sourced from ``deployments/integration_proof_<network>.json``, which ``og-bridge/proof.mjs``
+    generates from the registry's own ``ScorePublished`` events — **not** from the local score log.
+
+    The log was the obvious source and the wrong one. It records what this machine believes it
+    published, which is a different thing from what the chain holds: a local reset, a fresh clone,
+    or a re-run of the backfill wipes the ``chain_ref`` fields and the panel then reports zero
+    on-chain publications for a registry that still holds nineteen. It also cannot see anything
+    published from another machine.
+
+    The chain is the authority for a panel whose entire claim is "these are on-chain". The local
+    log is a cache, and a cache is not evidence.
+    """
     from continuum.og import chain as og_chain
 
     meta = _og_meta()
-    published = []
-    for borrower in _roster().values():
-        for payload in store.load_scores(borrower["borrower_id"]):
-            if payload.chain_ref and payload.chain_ref.tx_hash:
-                published.append(
-                    {
-                        "borrower_id": payload.borrower_id,
-                        "borrower_name": borrower.get("name", ""),
-                        "score": payload.score,
-                        "score_numeric": payload.score_numeric,
-                        "published_at": iso(payload.published_at),
-                        "tx_hash": payload.chain_ref.tx_hash,
-                        "block_number": payload.chain_ref.block_number,
-                        "explorer_url": payload.chain_ref.explorer_url,
-                        "storage_root_hash": payload.storage_ref.root_hash,
-                        "attested": payload.attestation.verified,
-                    }
-                )
+    proof = og_chain.load_integration_proof()
+    roster = _roster()
+
+    published = [
+        {
+            "borrower_id": p.get("borrower_id", ""),
+            # The proof carries the name it resolved at generation time; fall back to the live
+            # roster so a renamed borrower still reads correctly.
+            "borrower_name": roster.get(p.get("borrower_id", ""), {}).get("name")
+            or p.get("name", ""),
+            "score": p.get("score", ""),
+            "score_numeric": p.get("score_numeric", 0),
+            "published_at": p.get("published_at", ""),
+            "tx_hash": p.get("tx_hash", ""),
+            "block_number": p.get("block_number", 0),
+            "explorer_url": p.get("explorer_url", ""),
+            "storage_root_hash": p.get("storage_root_hash", ""),
+            "attested": bool(p.get("attested")),
+        }
+        for p in proof.get("publications", [])
+    ]
     published.sort(key=lambda r: r["published_at"], reverse=True)
 
     return {
         **meta,
         "onchain_publications": published,
         "onchain_count": len(published),
+        "attested_count": sum(1 for p in published if p["attested"]),
+        "proof_generated_at": proof.get("generated_at", ""),
         "contract_url": og_chain.explorer_contract_url(),
     }
 

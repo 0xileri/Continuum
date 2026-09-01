@@ -159,6 +159,24 @@ def publish_score(payload: ScorePublicationPayload) -> ChainPublishResult:
     )
 
 
+def load_integration_proof() -> dict:
+    """The §10 proof artifact for the active network, or an empty shell if it has not been built.
+
+    Written by ``og-bridge/proof.mjs`` from the registry's ``ScorePublished`` events, so it states
+    what the chain holds rather than what any local score log remembers. Missing is a normal state
+    — nothing has been published yet — and returns empty rather than raising, so the dashboard can
+    say "none yet" instead of erroring.
+    """
+    path = DEPLOYMENTS_DIR / f"integration_proof_{config.OG_NETWORK}.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        log.warning("could not read %s: %s", path, exc)
+        return {}
+
+
 def explorer_contract_url() -> str:
     address = registry_address()
     return f"{config.og()['explorer']}/address/{address}" if address else ""
