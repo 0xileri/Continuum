@@ -162,7 +162,9 @@ def _prior_state(
     return history[-1], (published[-1] if published else None)
 
 
-def _reusable_flags(borrower_id: str, documents: list[dict], as_of: datetime) -> LLMFlags | None:
+def _reusable_flags(
+    borrower_id: str, documents: list[dict], as_of: datetime
+) -> tuple[LLMFlags, "Attestation | None"] | None:
     """Reuse the previous document assessment when the visible document set has not changed.
 
     ``FEED_SLA["document_feed"]`` allows 30 days between syncs, so daily re-scoring against an
@@ -172,6 +174,13 @@ def _reusable_flags(borrower_id: str, documents: list[dict], as_of: datetime) ->
 
     Never reuses an offline stub: a run with credentials attached must actually call the agent rather
     than inherit a zero-confidence placeholder (ASSUMPTIONS #8).
+
+    **The attestation travels with the flags.** Returning the flags alone made a reused assessment
+    unattested — so a daily re-score of an unchanged document set produced ``type="none"`` even
+    though those exact flags came from a verified TEE call. That forced a false choice between cheap
+    daily scoring and attested scoring, when the attestation is a true statement about where the
+    flags came from and the flags have not changed. ``job_id`` and the record's own ``as_of`` still
+    say when it was produced, so nothing is being backdated.
     """
     prior = store.load_feature_record(borrower_id)
     if prior is None or prior.llm_flags.source == "offline_fixture":
@@ -181,7 +190,9 @@ def _reusable_flags(borrower_id: str, documents: list[dict], as_of: datetime) ->
         visible = llm_agent.visible_documents(documents, at)
         return visible[0].get("doc_id") if visible else None
 
-    return prior.llm_flags if newest(as_of) == newest(prior.as_of) else None
+    if newest(as_of) != newest(prior.as_of):
+        return None
+    return prior.llm_flags, prior.compute_attestation
 
 
 def new_document_since_last_score(
@@ -264,7 +275,13 @@ def rescore(
     b_raw = raw.for_borrower(borrower_id)
     base_dso = _base_dso(borrower_id)
 
+    flags = None
+    reused_attestation = None
+
     if force_escalation:
+        # The escalation model is a direct Anthropic call, so it carries no 0G attestation — and
+        # must not inherit the previous one, which would attribute a different model's output to a
+        # TEE that never saw it.
         flags = llm_agent.agent().assess(
             borrower.get("name", borrower_id),
             borrower.get("sector", ""),
@@ -272,10 +289,19 @@ def rescore(
             documents,
             force_escalation=True,
         )
-    else:
-        flags = None if fresh_llm else _reusable_flags(borrower_id, documents, as_of)
+    elif not fresh_llm:
+        reusable = _reusable_flags(borrower_id, documents, as_of)
+        if reusable is not None:
+            flags, reused_attestation = reusable
+
     record = aggregate.build_feature_record(
-        borrower, b_raw, as_of, documents=documents, base_dso=base_dso, llm_flags=flags
+        borrower,
+        b_raw,
+        as_of,
+        documents=documents,
+        base_dso=base_dso,
+        llm_flags=flags,
+        compute_attestation=reused_attestation,
     )
 
     history = store.load_scores(borrower_id)

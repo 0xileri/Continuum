@@ -102,6 +102,7 @@ def build_feature_record(
     documents: list[dict],
     base_dso: float = 40.0,
     llm_flags: LLMFlags | None = None,
+    compute_attestation: "Attestation | None" = None,
 ) -> BorrowerFeatureRecord:
     """Assemble §9's Borrower Feature Record for one borrower at one instant.
 
@@ -118,7 +119,8 @@ def build_feature_record(
     freshness = source_freshness(raw.feed_events, as_of)
     dq, dq_detail = quality.data_quality_score(freshness, as_of)
 
-    compute_attestation = None
+    # A caller reusing a previous assessment passes its attestation too — the flags being reused
+    # were produced by that call, so the attestation is still a true statement about them.
     if llm_flags is None:
         llm_flags, compute_attestation = assess_documents(
             borrower.get("name", borrower["borrower_id"]),
