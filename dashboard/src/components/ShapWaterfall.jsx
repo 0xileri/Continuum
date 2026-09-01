@@ -10,7 +10,8 @@ import { fmtInt } from '../format.js'
 // one scorer's attribution as the other's.
 // ASSUMPTIONS #1 records that on the trained-model path the numbers come from TreeSHAP rather than the
 // `shap` package, which drops a build dependency and means this component draws the waterfall
-// itself. Contributions are in log-odds, the space where they sum exactly to the prediction — so
+// itself. Contributions are in whichever space the scorer sums exactly in — log-odds for the
+// booster, composite-health-index points for the weighted formula — so
 // the bars are comparable to each other and to the base term, which a probability-space rescaling
 // would quietly break.
 
@@ -18,6 +19,13 @@ export default function ShapWaterfall({ attribution, limit = 10 }) {
   if (!attribution?.length) return <p className="empty">No attribution recorded for this score.</p>
 
   const header = attribution.find((r) => r._base_log_odds !== undefined) ?? {}
+
+  // The header row carries the units the scorer actually worked in. The weighted formula
+  // attributes in composite-health-index points; the trained booster attributes in log-odds.
+  // Hardcoding either label made the panel lie about one of them.
+  const composite = header._units === 'composite_health_index'
+  const units = composite ? 'composite' : 'log-odds'
+  const baseLabel = composite ? 'neutral baseline (all features at pivot)' : 'base log-odds (cohort expectation)'
   const rows = attribution.filter((r) => r.feature).slice(0, limit)
   const max = Math.max(...rows.map((r) => Math.abs(r.contribution)), 1e-6)
 
@@ -28,7 +36,7 @@ export default function ShapWaterfall({ attribution, limit = 10 }) {
           <tr>
             <th>Feature</th>
             <th className="num">Value</th>
-            <th style={{ width: 190 }}>Contribution to log-odds</th>
+            <th style={{ width: 190 }}>Contribution to {units}</th>
             <th className="num">±</th>
           </tr>
         </thead>
@@ -84,7 +92,7 @@ export default function ShapWaterfall({ attribution, limit = 10 }) {
             )
           })}
           <tr className="muted">
-            <td colSpan={2}>base log-odds (cohort expectation)</td>
+            <td colSpan={2}>{baseLabel}</td>
             <td />
             <td className="num">{(header._base_log_odds ?? 0).toFixed(3)}</td>
           </tr>
