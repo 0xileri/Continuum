@@ -20,21 +20,23 @@
   --accent-line: rgba(111, 211, 199, 0.32);
   --band: rgba(111, 211, 199, 0.24);
 
-  /* ---- severity, encoded within the brand hue ---------------------------------------
-     Only the mark's colours are used, so severity cannot be carried by hue. It is carried
-     by SATURATION AND LUMINANCE instead: a healthy borrower sits deep and calm, receding
-     into the ground; a failing one is drained of colour and pushed toward the light, where
-     it separates from everything around it.
+  /* ---- severity ---------------------------------------------------------------------
+     Teal carries the healthy end of the scale, so the ordinary state of the page stays on
+     brand. The bottom two bands break to warm.
 
-     Reading brightness as alarm is the instrument-panel convention this design already
-     borrows — a signal that has lost its colour and gone pale is a signal in trouble. The
-     honest cost is that hue no longer distinguishes grades, so the letter and the position
-     on the scale do more work than they did. See DESIGN.md. */
+     The all-teal version was tried and the cost was real: red-for-bad is a strong convention
+     in credit, and luminance alone made a failing borrower read as merely bright. Reserving
+     the break for `weak` and `bad` recovers that without diluting the identity — warm appears
+     on perhaps two rows of twelve, so it means something when it does. A palette where the
+     alarm colour is common is not an alarm colour.
+
+     The vermilion is pulled toward the teal's temperature rather than taken off a stock
+     ramp, so the two read as one system rather than a brand with a warning bolted on. */
   --strong: #2F6F68;
   --good: #45A79B;
   --watch: #6FD3C7;
-  --weak: #A6E7DD;
-  --bad: #DFF7F2;
+  --weak: #D9734E;
+  --bad: #E2503A;
   --neutral: #5C7079;
 
   --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -1021,17 +1023,15 @@ a:focus-visible {
   background: var(--neutral);
 }
 
-/* ---- grade chip: severity without hue ---------------------------------------------------
-   Restricted to the mark's palette, luminance alone was not enough — five steps in one hue put
-   BB-, BBB- and B within a few percent of each other, and the roster stopped being scannable.
+/* ---- grade chip: severity on two axes ---------------------------------------------------
+   Hue alone was not available (the palette is the mark's) and luminance alone was not enough —
+   five steps in one colour put BB-, BBB- and B within a few percent of each other and the roster
+   stopped being scannable. So the chip escalates on WEIGHT as well: a healthy grade is an outline
+   that recedes into the panel, a distressed one a solid block that advances off it.
 
-   So the chip carries severity on a second axis as well: WEIGHT. A healthy grade is an outline
-   that recedes into the panel; a distressed one is a solid block that advances off it. The
-   progression is quiet-hairline -> tinted -> solid -> bright-solid, which reads as escalation at
-   a glance and survives being the only hue on the page.
-
-   This is the same instinct as the mark itself — the trace is drawn brighter than the band around
-   it because it is the thing you are meant to look at. */
+   The bottom two bands also break to warm, which is why the progression works. Weight carries the
+   whole teal range, and the hue change marks the point where a lender has to act — so warm lands
+   on two rows of twelve rather than most of them, and stays an alarm rather than a texture. */
 
 .grade {
   border: 1px solid transparent;
@@ -1056,7 +1056,10 @@ a:focus-visible {
   background: color-mix(in srgb, var(--watch) 20%, transparent);
 }
 
-/* Solid from here down: the two bands a lender has to notice. */
+/* Solid from here down: the two bands a lender has to notice.
+   Dark text on both, which is measured rather than assumed — the ground against these fills gives
+   5.97:1 on `weak` and 4.99:1 on `bad`, comfortably past AA for normal text. Light text was tried
+   and fails: 2.96:1 on `weak`, below even the 3.0 threshold that bold type is allowed. */
 .grade.weak {
   color: var(--bg);
   background: var(--weak);

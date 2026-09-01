@@ -1,7 +1,7 @@
 ---
 version: 1
 name: Continuum-design-system
-description: A credit-rating interface that reads as an instrument panel rather than an institution. **Monochrome by constraint** — every colour on the surface is taken from the logo mark: cool near-black ground (`#0A0F13`), slate hairlines (`#24313A`), and a single teal voltage, **Trace** (`#6FD3C7`). The defining rule is that **colour is data**, and with only one hue available severity is carried by luminance and weight instead: a healthy grade is a deep outline that recedes, a distressed one a bright solid block that advances. Three type roles in deliberate tension — Archivo grotesque for headings (instrument labelling), Newsreader serif for explanatory prose (the register of the rating agencies this product argues with), IBM Plex Mono for every score, interval, hash and address. Panels are hairline-bordered with a soft shadow, section headings are small wide-tracked mono caps, and digits are tabular everywhere they align. Dark-only by commitment, not omission.
+description: A credit-rating interface that reads as an instrument panel rather than an institution. **Monochrome by constraint** — every colour on the surface is taken from the logo mark: cool near-black ground (`#0A0F13`), slate hairlines (`#24313A`), and a single teal voltage, **Trace** (`#6FD3C7`). The defining rule is that **colour is data**. Teal carries the healthy end of the severity scale by luminance and weight — a deep outline that recedes — and the bottom two bands break to a warm solid that advances. Warm lands on perhaps two rows of twelve, so it stays an alarm rather than a texture. Three type roles in deliberate tension — Archivo grotesque for headings (instrument labelling), Newsreader serif for explanatory prose (the register of the rating agencies this product argues with), IBM Plex Mono for every score, interval, hash and address. Panels are hairline-bordered with a soft shadow, section headings are small wide-tracked mono caps, and digits are tabular everywhere they align. Dark-only by commitment, not omission.
 
 colors:
   ground: "#0A0F13"
@@ -19,8 +19,8 @@ colors:
   severity-strong: "#2F6F68"
   severity-good: "#45A79B"
   severity-watch: "#6FD3C7"
-  severity-weak: "#A6E7DD"
-  severity-bad: "#DFF7F2"
+  severity-weak: "#D9734E"
+  severity-bad: "#E2503A"
   severity-neutral: "#5C7079"
 
 typography:
@@ -107,33 +107,35 @@ The atmosphere is **quiet by default and loud only where it must be**. Most of t
 
 ### Severity — the load-bearing rule
 
-The palette is restricted to the mark's own colours, so severity cannot be carried by hue. It is
-carried by **luminance and weight** instead:
-
 | Token | Hex | Grades | Chip treatment |
 |---|---|---|---|
-| `severity-strong` | `#2F6F68` | AAA–A | Deep outline, recedes |
-| `severity-good` | `#45A79B` | A-–BBB- | Outline |
-| `severity-watch` | `#6FD3C7` | BB–B | Tinted fill |
-| `severity-weak` | `#A6E7DD` | B-–CCC | **Solid**, dark text |
-| `severity-bad` | `#DFF7F2` | CC–D | **Solid, brightest**, bold |
+| `severity-strong` | `#2F6F68` | AAA–A | Deep teal outline, recedes |
+| `severity-good` | `#45A79B` | A-–BBB- | Teal outline |
+| `severity-watch` | `#6FD3C7` | BB–B | Teal, tinted fill |
+| `severity-weak` | `#D9734E` | B-–CCC | **Solid clay**, ground-coloured text |
+| `severity-bad` | `#E2503A` | CC–D | **Solid vermilion**, bold |
 
-Two axes, because one was not enough. Luminance alone put BB-, BBB- and B within a few percent of
-each other and the roster stopped being scannable — hue had been doing that work. So the chip also
-escalates in **weight**: quiet hairline → tinted → solid → bright solid. A healthy grade sinks into
-the panel; a distressed one lifts off it.
+**Two axes, and a deliberate break.** Weight carries the teal range: quiet hairline → outline →
+tinted fill. Luminance alone was tried and failed — five steps in one hue put BB-, BBB- and B
+within a few percent of each other and the roster stopped being scannable, because hue had been
+doing that work.
 
-This is the same instinct as the mark itself, where the trace is drawn brighter than the band
-around it because it is the thing you are meant to look at.
+The bottom two bands then break to warm. A fully monochrome version was built and the cost was
+real: red-for-bad is a strong convention in credit, and a failing borrower rendered as *merely
+bright* rather than *wrong*. Reserving the hue change for `weak` and `bad` recovers the convention
+without diluting the identity — **warm appears on about two rows of twelve, so it means something
+when it does.** A palette whose alarm colour is common has no alarm colour.
 
-> **The honest cost.** Red-for-bad is a strong convention in credit, and this palette gives it up
-> to stay inside the brand. The letter and the position on the scale now carry more of the load
-> than they did. If comprehension ever matters more than brand purity, reintroducing a single warm
-> hue for `weak` and `bad` is a two-line change — and the rest of the system is unaffected.
+The vermilion is pulled toward the teal's temperature rather than taken off a stock ramp, so the
+two read as one system rather than a brand with a warning bolted on.
 
-> **On this product, colour is data.** A reader learns that bright means distressed within seconds.
-> Spending the accent on decoration — a teal divider, a teal icon, a teal button that means nothing
-> — destroys the only thing the palette is for.
+**Text on the warm fills is the ground colour, and this is measured rather than assumed:** `#0A0F13`
+gives 5.97:1 on `weak` and 4.99:1 on `bad`, past AA for normal text. Light text was tried and fails
+— 2.96:1 on `weak`, below even the 3.0 that bold type is allowed.
+
+> **On this product, colour is data.** A reader learns within seconds that teal is ordinary and
+> warm is not. Spending either on decoration — a teal divider, a warm icon that means nothing —
+> destroys the only thing the palette is for.
 
 ## 3. Typography Rules
 
@@ -156,7 +158,7 @@ Three faces, three jobs, chosen for the tension between them.
 
 **Panel** — `surface` fill, 1px `hairline` border, 10px radius, 18–20px padding, soft shadow. Heading is a mono section label; an optional `note` in Newsreader sits under it.
 
-**Grade chip** — mono 600, 6px radius, 2px 8px padding. Outlined and tinted for `strong` / `good` / `watch`; solid with `ground` text for `weak` / `bad`, which are the two bands a lender has to notice. The large variant leads the borrower detail header.
+**Grade chip** — mono 600, 6px radius, 2px 8px padding. Outlined and tinted in teal for `strong` / `good` / `watch`; solid warm with `ground` text for `weak` / `bad`, the two bands a lender has to act on. The large variant leads the borrower detail header.
 
 **Badge** — 1px border, no fill, mono, ~11px. `ok` borders `trace`, `warn` borders `severity-watch`, `on` borders `severity-bad`, `off` borders `hairline` with `dim` text. Badges state facts (`attested`, `held`, `capped`), never decorate.
 
@@ -213,7 +215,7 @@ Hover raises `surface` → `surface-raised`. Selection uses `trace-soft` fill wi
 - Apply the loudest colour to the most common state
 - Colour a trend line by direction rather than severity
 - Use `severity-watch` for chrome (this was a real bug: the trust banner read as a per-borrower warning)
-- Introduce a second hue — the palette is the mark's, and that constraint is the identity. If something needs emphasis, it needs weight, luminance or space, not colour
+- Introduce a third hue. The palette is the mark's teal plus one warm break reserved for the bottom two grades. If something else needs emphasis it needs weight, luminance or space — not colour
 - Add gradients, glows or glass
 - Let the page body scroll sideways
 
@@ -229,6 +231,6 @@ Tables always scroll inside `overflow-x: auto`. Charts scale via `viewBox` with 
 
 When building UI for this project:
 
-> Use the Continuum design system. Dark instrument-panel aesthetic on `#0A0F13`. **The entire palette comes from the logo mark: ink `#0A0F13`, slate `#24313A`, teal `#6FD3C7`. Introduce no other hue.** Severity is encoded by luminance and weight within that teal — deep outline for healthy (`#2F6F68`), bright solid for distressed (`#DFF7F2`) — never by colour, and never used decoratively. Archivo for headings, Newsreader for explanatory prose, IBM Plex Mono for all data and for section headings (10.5px uppercase, 0.14em tracking, `#697C86`). Panels: `#121A20` on `#24313A` hairlines, 10px radius, one soft shadow, no gradients. Tabular numerals wherever digits align. Every interactive element gets a visible focus ring.
+> Use the Continuum design system. Dark instrument-panel aesthetic on `#0A0F13`. **The palette is the logo mark's — ink `#0A0F13`, slate `#24313A`, teal `#6FD3C7` — plus exactly one warm break (`#D9734E` clay, `#E2503A` vermilion) reserved for the bottom two grade bands. Introduce no other hue.** Severity escalates by weight through the teal range (deep outline → outline → tinted fill) and then by hue for `weak` and `bad`, which are solid with ground-coloured text. Never use either family decoratively. Archivo for headings, Newsreader for explanatory prose, IBM Plex Mono for all data and for section headings (10.5px uppercase, 0.14em tracking, `#697C86`). Panels: `#121A20` on `#24313A` hairlines, 10px radius, one soft shadow, no gradients. Tabular numerals wherever digits align. Every interactive element gets a visible focus ring.
 
 **The one rule to carry into any change:** on this product colour is data. Before adding a colour, ask what fact it encodes. If the answer is "it looks better", use hierarchy, spacing or weight instead.
