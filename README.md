@@ -38,6 +38,11 @@ bytecode rather than in the operator's own off-chain code.
 
 ## Architecture
 
+![Continuum architecture](brand/architecture.png)
+
+<details>
+<summary>Same diagram as text</summary>
+
 ```
                         ┌──────────────────────────────────────┐
    synthetic borrower   │  Layer 1 — ingestion                 │
@@ -77,6 +82,8 @@ bytecode rather than in the operator's own off-chain code.
                                      │  0G Explorer / Storage links     │
                                      └──────────────────────────────────┘
 ```
+
+</details>
 
 | 0G component | What it does here | Code |
 |---|---|---|

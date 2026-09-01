@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 800" width="1240" height="800"
+     font-family="Archivo, 'Segoe UI', system-ui, sans-serif" role="img"
+     aria-label="Continuum architecture — ingestion, scoring, and the three 0G components">
+  <title>Continuum architecture</title>
+
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4A5C66"/>
+    </marker>
+    <marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6FD3C7"/>
+    </marker>
+  </defs>
+
+  <rect width="1240" height="800" fill="#0A0F13"/>
+
+  <!-- ===== header ===================================================================== -->
+  <text x="40" y="52" fill="#E6EFF1" font-size="25" font-weight="600" letter-spacing="-.7">Continuum — architecture</text>
+  <text x="40" y="76" fill="#8FA5AC" font-size="13.5">
+    Five layers. The three 0G components are the right-hand column; everything they touch is teal.
+  </text>
+
+  <!-- ===== LAYER 1 : sources ========================================================== -->
+  <text x="40" y="126" fill="#62767F" font-size="10.5" font-family="'IBM Plex Mono', monospace"
+        letter-spacing="2.2">LAYER 1 · INGESTION</text>
+
+  <rect x="40" y="140" width="228" height="196" rx="11" fill="#101820" stroke="#24313A"/>
+  <text x="60" y="168" fill="#E6EFF1" font-size="14" font-weight="600">Borrower feeds</text>
+  <g fill="#8FA5AC" font-size="12.5" font-family="'IBM Plex Mono', monospace">
+    <text x="60" y="194">invoices</text>
+    <text x="60" y="216">bank transactions</text>
+    <text x="60" y="238">repayments</text>
+    <text x="60" y="260">documents</text>
+    <text x="60" y="282">feed heartbeats</text>
+  </g>
+  <text x="60" y="312" fill="#62767F" font-size="11.5">Synthetic in Wave 3 —</text>
+  <text x="60" y="327" fill="#62767F" font-size="11.5">12 borrowers, 18 months</text>
+
+  <!-- ===== LAYER 2 : scoring ========================================================== -->
+  <text x="316" y="126" fill="#62767F" font-size="10.5" font-family="'IBM Plex Mono', monospace"
+        letter-spacing="2.2">LAYER 2 · SCORING</text>
+
+  <rect x="316" y="140" width="470" height="330" rx="11" fill="#101820" stroke="#24313A"/>
+
+  <!-- feature record -->
+  <rect x="336" y="160" width="430" height="52" rx="8" fill="#16212A" stroke="#24313A"/>
+  <text x="352" y="182" fill="#E6EFF1" font-size="13" font-weight="600">Borrower Feature Record</text>
+  <text x="352" y="200" fill="#8FA5AC" font-size="11.5">18 features · per-feed freshness · data quality score</text>
+
+  <!-- the two scorers, side by side -->
+  <rect x="336" y="228" width="208" height="86" rx="8" fill="#16212A" stroke="#24313A"/>
+  <text x="352" y="250" fill="#E6EFF1" font-size="13" font-weight="600">Weighted score</text>
+  <text x="352" y="268" fill="#8FA5AC" font-size="11.5">4 features, stated weights</text>
+  <text x="352" y="285" fill="#8FA5AC" font-size="11.5">exact attribution</text>
+  <text x="352" y="303" fill="#D2A24C" font-size="11">not a trained model</text>
+
+  <rect x="558" y="228" width="208" height="86" rx="8" fill="#16212A" stroke="#6FD3C7" stroke-opacity=".45"/>
+  <text x="574" y="250" fill="#6FD3C7" font-size="13" font-weight="600">Document agent</text>
+  <text x="574" y="268" fill="#8FA5AC" font-size="11.5">reads evidence, returns</text>
+  <text x="574" y="285" fill="#8FA5AC" font-size="11.5">structured risk flags —</text>
+  <text x="574" y="303" fill="#8FA5AC" font-size="11.5">never a score</text>
+
+  <!-- gates -->
+  <rect x="336" y="330" width="430" height="60" rx="8" fill="#16212A" stroke="#24313A"/>
+  <text x="352" y="352" fill="#E6EFF1" font-size="13" font-weight="600">Anomaly · staleness · confidence interval</text>
+  <text x="352" y="371" fill="#8FA5AC" font-size="11.5">measured against each borrower's own history; silence widens the band and lowers the score</text>
+
+  <rect x="336" y="404" width="430" height="48" rx="8" fill="#16212A" stroke="#24313A"/>
+  <text x="352" y="426" fill="#E6EFF1" font-size="13" font-weight="600">Publish gate</text>
+  <text x="352" y="443" fill="#8FA5AC" font-size="11.5">is this worth a transaction? boundary-crossing downgrades override the cooldown</text>
+
+  <!-- ===== 0G column ================================================================== -->
+  <text x="858" y="126" fill="#6FD3C7" font-size="10.5" font-family="'IBM Plex Mono', monospace"
+        letter-spacing="2.2">0G NETWORK</text>
+
+  <!-- compute -->
+  <rect x="858" y="140" width="342" height="112" rx="11" fill="#101820" stroke="#6FD3C7" stroke-opacity=".55"/>
+  <text x="878" y="167" fill="#6FD3C7" font-size="15" font-weight="600">0G Compute</text>
+  <text x="878" y="189" fill="#E6EFF1" font-size="12.5">Runs the document agent inside a TEE.</text>
+  <text x="878" y="209" fill="#8FA5AC" font-size="12">The response is signed by an enclave-held key;</text>
+  <text x="878" y="227" fill="#8FA5AC" font-size="12">the broker verifies it before flags move a score.</text>
+  <text x="878" y="245" fill="#62767F" font-size="11" font-family="'IBM Plex Mono', monospace">processResponse → verified: true</text>
+
+  <!-- storage -->
+  <rect x="858" y="268" width="342" height="102" rx="11" fill="#101820" stroke="#6FD3C7" stroke-opacity=".55"/>
+  <text x="878" y="295" fill="#6FD3C7" font-size="15" font-weight="600">0G Storage</text>
+  <text x="878" y="317" fill="#E6EFF1" font-size="12.5">Holds the feature record and evidence.</text>
+  <text x="878" y="337" fill="#8FA5AC" font-size="12">Returns a merkle root. Only the root goes on-chain —</text>
+  <text x="878" y="355" fill="#8FA5AC" font-size="12">borrower financials never enter a public registry.</text>
+
+  <!-- chain -->
+  <rect x="858" y="386" width="342" height="150" rx="11" fill="#101820" stroke="#6FD3C7" stroke-opacity=".55"/>
+  <text x="878" y="413" fill="#6FD3C7" font-size="15" font-weight="600">0G Chain — ContinuumScoreRegistry</text>
+  <text x="878" y="435" fill="#E6EFF1" font-size="12.5">Stores score, interval, trigger reason,</text>
+  <text x="878" y="453" fill="#E6EFF1" font-size="12.5">attestation ref and storage root.</text>
+  <text x="878" y="477" fill="#D9773F" font-size="12" font-weight="600">Re-checks the rules in bytecode:</text>
+  <text x="878" y="495" fill="#8FA5AC" font-size="12">· 6h cooldown, one-sided</text>
+  <text x="878" y="513" fill="#8FA5AC" font-size="12">· ±50bps rate-change cap</text>
+  <text x="878" y="531" fill="#62767F" font-size="11" font-family="'IBM Plex Mono', monospace">it refuses writes from its own operator</text>
+
+  <!-- ===== consumption =============================================================== -->
+  <text x="40" y="524" fill="#62767F" font-size="10.5" font-family="'IBM Plex Mono', monospace"
+        letter-spacing="2.2">CONSUMPTION</text>
+  <rect x="40" y="538" width="746" height="86" rx="11" fill="#101820" stroke="#24313A"/>
+  <text x="60" y="566" fill="#E6EFF1" font-size="14" font-weight="600">Pool terms — a pure function of the published score</text>
+  <text x="60" y="588" fill="#8FA5AC" font-size="12.5">rate = base + risk premium(score) + uncertainty premium(interval width) · max LTV</text>
+  <text x="60" y="609" fill="#8FA5AC" font-size="12.5">The agent sets the risk input. A transparent formula sets the price. It never touches the rate.</text>
+
+  <!-- ===== arrows ==================================================================== -->
+  <!-- sources → record -->
+  <path d="M268 238 L330 238" stroke="#4A5C66" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <!-- record → scorers -->
+  <path d="M440 212 L440 224" stroke="#4A5C66" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <path d="M662 212 L662 224" stroke="#4A5C66" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <!-- agent ↔ compute -->
+  <path d="M766 268 L854 206" stroke="#6FD3C7" stroke-width="1.8" marker-end="url(#at)" fill="none"/>
+  <text x="790" y="252" fill="#6FD3C7" font-size="9.5" font-family="'IBM Plex Mono', monospace">attested</text>
+  <!-- scorers → gates -->
+  <path d="M440 314 L440 326" stroke="#4A5C66" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <path d="M662 314 L662 326" stroke="#4A5C66" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <!-- gates → publish -->
+  <path d="M551 390 L551 400" stroke="#4A5C66" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <!-- record → storage -->
+  <path d="M786 186 C822 186, 822 316, 854 320" stroke="#6FD3C7" stroke-width="1.6"
+        stroke-dasharray="4 4" marker-end="url(#at)" fill="none" opacity=".85"/>
+  <text x="790" y="342" fill="#6FD3C7" font-size="9.5" font-family="'IBM Plex Mono', monospace" opacity=".85">record</text>
+  <!-- publish → chain -->
+  <path d="M766 434 L854 446" stroke="#6FD3C7" stroke-width="1.8" marker-end="url(#at)" fill="none"/>
+  <text x="788" y="424" fill="#6FD3C7" font-size="9.5" font-family="'IBM Plex Mono', monospace">score+root</text>
+  <!-- chain → consumption -->
+  <path d="M1029 536 C1029 590, 820 580, 790 580" stroke="#4A5C66" stroke-width="1.6"
+        marker-end="url(#a)" fill="none"/>
+
+  <!-- ===== footer note =============================================================== -->
+  <rect x="40" y="656" width="1160" height="92" rx="10" fill="#101820" stroke="#24313A"/>
+  <text x="60" y="682" fill="#D2A24C" font-size="12" font-weight="600">Scope, stated plainly</text>
+  <text x="60" y="704" fill="#8FA5AC" font-size="12">
+    0G Compute serves inference against registered providers; it does not execute arbitrary jobs. So the reasoning call is attested and the
+  </text>
+  <text x="60" y="722" fill="#8FA5AC" font-size="12">
+    aggregation arithmetic runs off-chain, bound to its inputs by a local measurement hash. The scoring formula is a stated prior, not a fitted
+  </text>
+  <text x="60" y="740" fill="#8FA5AC" font-size="12">
+    model, and the borrowers are synthetic. Every published payload says so.
+  </text>
+</svg>
