@@ -144,7 +144,7 @@ and §4's rule turns that into a score that keeps falling and never once ticks u
 Tests:
 
 ```bash
-python -m pytest              # 116 tests — scale, staleness, publish gate, consumption, attestation
+python -m pytest              # 134 tests — scale, staleness, publish gate, consumption, attestation
 cd contracts && forge test    # 23 tests — the on-chain cooldown and circuit breaker
 ```
 
@@ -276,7 +276,7 @@ contracts/            Foundry — ContinuumScoreRegistry.sol + 23 tests
 og-bridge/            Node bridge to the 0G SDKs (0G has no Python SDK)
 dashboard/            React + Vite
 scripts/              publish_wave3.py, demo_event.py
-tests/                116 pytest tests
+tests/                134 pytest tests
 ```
 
 ## Docs
