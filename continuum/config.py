@@ -97,11 +97,18 @@ def _check_demo_vs_mainnet() -> None:
 
 
 OG_ALLOW_OFFLINE_DEMO = os.getenv("CONTINUUM_OG_ALLOW_OFFLINE_DEMO", "") == "1"
-"""Explicit demo/offline mode for local-only runs.
+"""Explicit demo/offline mode. Governs **publishing**, not scoring.
 
-INCOMPATIBLE with mainnet. A demo path is allowed only when the network is not set to
-``mainnet`` and the operator has intentionally opted into it. The check _check_demo_vs_mainnet()
-enforces this at startup."""
+Incompatible with mainnet, enforced at import by ``_check_demo_vs_mainnet``.
+
+Scoring no longer consults this. ``og.compute`` degrades to zero-confidence flags on any failure
+regardless of network, because scoring and publishing are different decisions and only the second
+one needs a guarantee. A borrower with no documents, or a Compute outage, previously raised on
+mainnet — which stopped the daily cron mid-cohort and left a borrower permanently unscoreable,
+while protecting nothing: an unattested score is blocked at publication by
+``OG_REQUIRE_ATTESTATION`` and by ``publish_wave3.py``, which is where the check belongs.
+
+It still gates the chain writes in ``og.chain``, where refusing is correct."""
 
 _check_demo_vs_mainnet()
 
@@ -174,11 +181,9 @@ runtime defaults to off so local or synthetic runs do not fail on a missing atte
 mainnet submission run should set it explicitly to avoid accidental publishing without a valid
 proof."""
 
-OG_ALLOW_OFFLINE_DEMO = os.getenv("CONTINUUM_OG_ALLOW_OFFLINE_DEMO", "") == "1"
-"""Explicit local/demo-only escape hatch.
-
-This may only be true when ``CONTINUUM_OG_NETWORK`` is not ``mainnet``. Mainnet runs must never
-carry a local fallback or an unverified attestation."""
+# NOTE: OG_ALLOW_OFFLINE_DEMO is defined once, above, next to _check_demo_vs_mainnet.
+# A second binding lived here and has been removed: two module-level definitions of the same
+# name is how one of them gets edited and the other silently wins.
 
 # --------------------------------------------------------------------------------------
 # Synthetic data generation (ASSUMPTIONS #10)

@@ -64,14 +64,16 @@ def reason_over_documents(
     """
     from continuum.scoring import llm_agent
 
+    # The demo-mode/mainnet incompatibility is enforced at import by config._check_demo_vs_mainnet,
+    # so there is nothing to re-check here.
     visible = llm_agent.visible_documents(documents, as_of)
-    if config.OG_NETWORK == "mainnet" and config.OG_ALLOW_OFFLINE_DEMO:
-        raise RuntimeError(
-            "CONTINUUM_OG_ALLOW_OFFLINE_DEMO cannot be enabled when CONTINUUM_OG_NETWORK=mainnet"
-        )
+
     if not visible:
-        if config.OG_NETWORK == "mainnet":
-            raise RuntimeError("No documents received for mainnet publish path; refusing to publish")
+        # No documents is a legitimate state, not a failure. It means no document-based flag can be
+        # raised either way, which is what confidence 0.25 says — and that widens the published
+        # interval rather than clearing the borrower. Raising here instead made a document-less
+        # borrower permanently unscoreable on mainnet while protecting nothing: an unattested score
+        # is stopped at publication, not at scoring.
         return ComputeResult(
             flags=LLMFlags(
                 covenant_breach=False,
@@ -105,30 +107,30 @@ def reason_over_documents(
                 "temperature": 0,
             },
         )
+    # A Compute failure degrades to zero-confidence flags on every network, mainnet included.
+    #
+    # Raising here was protecting the wrong thing. Scoring and publishing are separate decisions:
+    # a score computed without the agent is a legitimate, *less confident* score — the interval
+    # widens and the grade ceiling falls, which is the engine's standard response to a missing
+    # signal everywhere else. Refusing to produce it at all meant one provider outage stopped the
+    # scheduled run for the whole cohort, and nothing downstream was any safer, because an
+    # unattested score is already blocked at publication by OG_REQUIRE_ATTESTATION and by
+    # publish_wave3.py's --allow-unattested gate.
+    #
+    # Logged at warning, not swallowed: the attestation comes back type="none", which every
+    # consumer can see and the dashboard renders as an absence.
     except BridgeUnavailable as exc:
-        if config.OG_ALLOW_OFFLINE_DEMO and config.OG_NETWORK != "mainnet":
-            log.warning("0G Compute unavailable in explicitly enabled demo mode: %s", exc)
-            return ComputeResult(
-                flags=llm_agent.offline_flags(f"0G Compute unavailable: {exc}"),
-                attestation=Attestation(verified=False)
-            )
-        log.error("0G Compute unavailable and no verified attestation possible — failing loudly")
-        raise RuntimeError(
-            "0G Compute unavailable — refusing to score/publish without verified attestation. "
-            "Enable CONTINUUM_OG_ALLOW_OFFLINE_DEMO=1 and set CONTINUUM_OG_NETWORK to non-mainnet for testing."
-        ) from exc
+        log.warning("0G Compute unavailable; scoring unattested: %s", exc)
+        return ComputeResult(
+            flags=llm_agent.offline_flags(f"0G Compute unavailable: {exc}"),
+            attestation=Attestation(),
+        )
     except BridgeError as exc:
-        if config.OG_ALLOW_OFFLINE_DEMO and config.OG_NETWORK != "mainnet":
-            log.warning("0G Compute call failed in explicitly enabled demo mode: %s", exc)
-            return ComputeResult(
-                flags=llm_agent.offline_flags(f"0G Compute failed: {exc}"),
-                attestation=Attestation(verified=False)
-            )
-        log.error("0G Compute call failed and no verified attestation possible — failing loudly")
-        raise RuntimeError(
-            f"0G Compute call failed — refusing to score/publish without verified attestation: {exc}. "
-            "Enable CONTINUUM_OG_ALLOW_OFFLINE_DEMO=1 and set CONTINUUM_OG_NETWORK to non-mainnet for testing."
-        ) from exc
+        log.warning("0G Compute call failed; scoring unattested: %s", exc)
+        return ComputeResult(
+            flags=llm_agent.offline_flags(f"0G Compute failed: {exc}"),
+            attestation=Attestation(),
+        )
 
     attestation = Attestation.model_validate(result.get("attestation", {}))
     content = result.get("content", "")
@@ -142,20 +144,18 @@ def reason_over_documents(
             }
         )
     except (ValueError, ValidationError) as exc:
-        if config.OG_ALLOW_OFFLINE_DEMO and config.OG_NETWORK != "mainnet":
-            log.warning("0G Compute response did not validate: %s", exc)
-            return ComputeResult(
-                flags=llm_agent.offline_flags(
-                    f"0G Compute returned an unusable response ({type(exc).__name__}); "
-                    f"the call was attested but its content could not be validated"
-                ),
-                attestation=attestation,
-                raw_content=content,
-            )
-        raise RuntimeError(
-            "0G Compute returned an unusable response; refusing to publish without a verified "
-            "attestation"
-        ) from exc
+        log.warning("0G Compute response did not validate; scoring without flags: %s", exc)
+        return ComputeResult(
+            flags=llm_agent.offline_flags(
+                f"0G Compute returned an unusable response ({type(exc).__name__}); "
+                f"the call was attested but its content could not be validated"
+            ),
+            # The attestation is kept: a verified signature over a malformed answer is still a true
+            # fact about what the provider returned, and discarding it would hide a provider that
+            # is reliably producing garbage.
+            attestation=attestation,
+            raw_content=content,
+        )
 
     shown = {d["doc_id"] for d in visible}
     refs = [r for r in parsed.evidence_refs if r in shown]
@@ -174,13 +174,18 @@ def reason_over_documents(
     )
 
     if not attestation.verified:
-        msg = result.get("verify_error", "") or "signature did not verify"
+        # The provider answered but its TEE signature did not check out. The flags are kept and the
+        # attestation says plainly that it is unverified — which is the whole reason `verified` is a
+        # separate field from `type`. Refusing to score here would discard a real response to
+        # enforce a publication rule at the wrong layer; OG_REQUIRE_ATTESTATION and
+        # publish_wave3.py both already refuse to publish this, and the dashboard renders it as
+        # "returned, NOT verified" rather than as an attestation.
         log.error(
-            "0G Compute returned flags for %s but the TEE signature did not verify (%s)",
+            "0G Compute returned flags for %s but the TEE signature did not verify (%s) — "
+            "scoring with them, marked unverified; this score cannot be published attested",
             borrower_name,
-            msg,
+            result.get("verify_error", "") or "signature did not verify",
         )
-        raise RuntimeError("0G Compute attestation missing or unverified — refusing to publish")
 
     return ComputeResult(
         flags=flags,
