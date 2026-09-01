@@ -5,7 +5,7 @@
 # Railway's own push-to-deploy is a GitHub App webhook, and it was never firing for this repo —
 # every deploy so far has needed the service source re-attached by hand, which is exactly the thing
 # you do not want to discover an hour before a demo. Granting the Railway GitHub App access is the
-# proper fix, but it needs admin on valeriusxix/Continuum; this workflow does not, so the repo can
+# proper fix, but it needs admin on 0xileri/Continuum; this workflow does not, so the repo can
 # deploy itself either way. If the App is later connected, this becomes redundant rather than
 # harmful — Railway skips a build whose source is already current.
 #
@@ -13,7 +13,7 @@
 #
 #   1. Railway dashboard -> project "continuum" -> Settings -> Tokens -> Create token
 #      (a PROJECT token, scoped to this project; it cannot touch anything else)
-#   2. GitHub -> valeriusxix/Continuum -> Settings -> Secrets and variables -> Actions
+#   2. GitHub -> 0xileri/Continuum -> Settings -> Secrets and variables -> Actions
 #      -> New repository secret, named RAILWAY_TOKEN
 #
 # Nothing else is needed: the project and service are pinned below, and the token never leaves

@@ -13,7 +13,7 @@
   "authorized_scorer": "0xb0F086D0F9E5E33c97dc9Afe61Dad7165d5F981B",
   "source_tag": "mainnet-registry-0x96406Be2",
   "source_commit": "7aa9692",
-  "source_url": "https://github.com/valeriusxix/Continuum/tree/mainnet-registry-0x96406Be2/contracts/src/ContinuumScoreRegistry.sol",
+  "source_url": "https://github.com/0xileri/Continuum/tree/mainnet-registry-0x96406Be2/contracts/src/ContinuumScoreRegistry.sol",
   "source_keccak256": "0xa47f717c204cee0d7be05ca56f6cf1ebea4f55c046e1a5ebe08abe94fe9106f7",
   "build": {
     "solc": "0.8.24+commit.e11b9ed9",
