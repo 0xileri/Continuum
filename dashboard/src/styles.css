@@ -20,23 +20,29 @@
   --accent-line: rgba(111, 211, 199, 0.32);
   --band: rgba(111, 211, 199, 0.24);
 
-  /* ---- severity ---------------------------------------------------------------------
-     Teal carries the healthy end of the scale, so the ordinary state of the page stays on
-     brand. The bottom two bands break to warm.
+  /* ---- severity: the credit scale, in its own conventional language -------------------
+     Credit grading has a visual vocabulary that predates this product — green for investment
+     grade, amber for speculative, red for distressed — and a reader arrives already fluent in it.
+     An earlier version of this palette was teal-only, which was on brand and cost more than it
+     was worth: with a single hue, BB- and BBB- sat a few percent apart and the scale had to be
+     decoded rather than read.
 
-     The all-teal version was tried and the cost was real: red-for-bad is a strong convention
-     in credit, and luminance alone made a failing borrower read as merely bright. Reserving
-     the break for `weak` and `bad` recovers that without diluting the identity — warm appears
-     on perhaps two rows of twelve, so it means something when it does. A palette where the
-     alarm colour is common is not an alarm colour.
+     Each band now gets its own hue, and every hue means exactly one thing:
 
-     The vermilion is pulled toward the teal's temperature rather than taken off a stock
-     ramp, so the two read as one system rather than a brand with a warning bolted on. */
-  --strong: #2F6F68;
-  --good: #45A79B;
-  --watch: #6FD3C7;
-  --weak: #D9734E;
-  --bad: #E2503A;
+       green   #4FA97E  investment grade, strong      AAA - A
+       teal    #6FD3C7  investment grade, adequate    A- - BBB-   (the brand colour, and the
+                                                                   anchor the scale is built from)
+       amber   #D2A24C  speculative — watch           BB - B
+       orange  #D9773F  substantial risk              B- - CCC
+       red     #D6473A  distressed / default          CC - D
+
+     Desaturated deliberately. Full-strength versions of these are a traffic light, not an
+     instrument, and a page of saturated primaries reads as an alert rather than a record. */
+  --strong: #4FA97E;
+  --good: #6FD3C7;
+  --watch: #D2A24C;
+  --weak: #D9773F;
+  --bad: #D6473A;
   --neutral: #5C7079;
 
   --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -1023,63 +1029,179 @@ a:focus-visible {
   background: var(--neutral);
 }
 
-/* ---- grade chip: severity on two axes ---------------------------------------------------
-   Hue alone was not available (the palette is the mark's) and luminance alone was not enough —
-   five steps in one colour put BB-, BBB- and B within a few percent of each other and the roster
-   stopped being scannable. So the chip escalates on WEIGHT as well: a healthy grade is an outline
-   that recedes into the panel, a distressed one a solid block that advances off it.
-
-   The bottom two bands also break to warm, which is why the progression works. Weight carries the
-   whole teal range, and the hue change marks the point where a lender has to act — so warm lands
-   on two rows of twelve rather than most of them, and stays an alarm rather than a texture. */
+/* ---- grade chip -------------------------------------------------------------------------
+   One treatment across the whole scale, now that hue carries the meaning: a filled swatch with
+   ground-coloured text. The outline/solid split an earlier monochrome version needed was
+   compensating for hues too close together, and with a real scale it only made the middle of the
+   range look like a different kind of object from the ends. */
 
 .grade {
   border: 1px solid transparent;
-  background: transparent;
-}
-
-.grade.strong {
-  color: var(--strong);
-  border-color: color-mix(in srgb, var(--strong) 55%, transparent);
-  background: color-mix(in srgb, var(--strong) 12%, transparent);
-}
-
-.grade.good {
-  color: var(--good);
-  border-color: color-mix(in srgb, var(--good) 55%, transparent);
-  background: color-mix(in srgb, var(--good) 14%, transparent);
-}
-
-.grade.watch {
-  color: var(--watch);
-  border-color: color-mix(in srgb, var(--watch) 70%, transparent);
-  background: color-mix(in srgb, var(--watch) 20%, transparent);
-}
-
-/* Solid from here down: the two bands a lender has to notice.
-   Dark text on both, which is measured rather than assumed — the ground against these fills gives
-   5.97:1 on `weak` and 4.99:1 on `bad`, comfortably past AA for normal text. Light text was tried
-   and fails: 2.96:1 on `weak`, below even the 3.0 threshold that bold type is allowed. */
-.grade.weak {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--bg);
-  background: var(--weak);
-  border-color: var(--weak);
 }
 
-.grade.bad {
-  color: var(--bg);
-  background: var(--bad);
-  border-color: var(--bad);
-  font-weight: 700;
-}
+.grade.strong { background: var(--strong); border-color: var(--strong); }
+.grade.good   { background: var(--good);   border-color: var(--good); }
+.grade.watch  { background: var(--watch);  border-color: var(--watch); }
+.grade.weak   { background: var(--weak);   border-color: var(--weak); }
+.grade.bad    { background: var(--bad);    border-color: var(--bad); font-weight: 700; }
 
 .grade.neutral {
+  background: transparent;
   color: var(--dim);
   border-color: var(--line);
 }
 
-/* The large chip in the detail header keeps the same logic at scale. */
 .grade.lg {
   padding: 4px 12px;
   border-radius: 8px;
 }
+
+/* ---- portfolio summary ------------------------------------------------------------------
+   The book-level view. A lender's first question is the shape of the whole thing, not the state
+   of one row — the page previously opened straight into a single borrower and never answered it. */
+
+.pf-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--s4);
+  padding-bottom: var(--s4);
+  margin-bottom: var(--s4);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.pf-stat .label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: var(--s1);
+}
+
+.pf-stat .value {
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.pf-stat .value .sub {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--dim);
+  margin-left: 1px;
+}
+
+/* Segment widths are borrower counts, so the shape of the bar is the shape of the book. */
+.pf-dist {
+  display: flex;
+  height: 30px;
+  border-radius: 7px;
+  overflow: hidden;
+  gap: 2px;
+  margin-bottom: var(--s4);
+}
+
+.pf-seg {
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--bg);
+  min-width: 26px;
+}
+
+.pf-seg.strong { background: var(--strong); }
+.pf-seg.good   { background: var(--good); }
+.pf-seg.watch  { background: var(--watch); }
+.pf-seg.weak   { background: var(--weak); }
+.pf-seg.bad    { background: var(--bad); }
+
+/* The answer to "what does this colour mean", stated rather than inferred. */
+.pf-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+  gap: var(--s2) var(--s4);
+}
+
+.pf-key {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 7px 0;
+}
+
+.pf-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  align-self: start;
+  margin-top: 4px;
+}
+.pf-dot.strong { background: var(--strong); }
+.pf-dot.good   { background: var(--good); }
+.pf-dot.watch  { background: var(--watch); }
+.pf-dot.weak   { background: var(--weak); }
+.pf-dot.bad    { background: var(--bad); }
+
+.pf-key .k-label { font-size: 12.5px; line-height: 1.35; }
+.pf-key .k-grades {
+  font-size: 10.5px;
+  color: var(--dim);
+  letter-spacing: .04em;
+  margin-top: 2px;
+}
+.pf-key .k-count {
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- denser roster rows -------------------------------------------------------------------
+   The row carried a name, an archetype and a sparkline while the API returned two dozen fields.
+   A credit list has to answer "which of these needs me today", and the letter alone does not: a
+   BBB with a 90-point interval and a dark feed is a different proposition from a fully-reported
+   one at the same grade. */
+
+.roster-item .metrics {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: .02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.roster-item .metrics .m-sep { opacity: .35; }
+
+.roster-item .metrics .att {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.roster-item .metrics .att::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.roster-item .metrics .att.no::before { background: var(--line); }
+.roster-item .metrics .att.no { color: var(--neutral); }
+.roster-item .metrics .silent { color: var(--watch); }

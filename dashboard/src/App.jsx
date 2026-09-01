@@ -14,6 +14,7 @@ import DocumentsPanel from './components/DocumentsPanel.jsx'
 import IntervalBreakdown from './components/IntervalBreakdown.jsx'
 import LlmFlagsPanel from './components/LlmFlagsPanel.jsx'
 import OGPanel, { OGProofPanel } from './components/OGPanel.jsx'
+import PortfolioSummary from './components/PortfolioSummary.jsx'
 import Roster from './components/Roster.jsx'
 import ScoreBuildUp from './components/ScoreBuildUp.jsx'
 import ScoreHistoryChart from './components/ScoreHistoryChart.jsx'
@@ -131,6 +132,14 @@ export default function App() {
           <strong>Wave 3 — {meta?.scorer?.kind === 'quant' ? 'weighted formula, not a trained model' : meta?.scorer?.kind}.</strong>{' '}
           {meta?.scorer?.statement}
         </div>
+
+        <section className="panel">
+          <h2>Portfolio</h2>
+          <p className="note">
+            The book at a glance, and what every colour on this page means.
+          </p>
+          <PortfolioSummary borrowers={borrowers} og={og} />
+        </section>
 
         <section className="panel">
           <h2>0G integration proof</h2>

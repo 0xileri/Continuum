@@ -73,6 +73,38 @@ export default function Roster({ borrowers, selectedId, onSelect }) {
                 )}
               </span>
             </div>
+
+            {/* The row's second line. A credit list has to answer "which of these needs me
+                today", and the letter alone does not: a BBB with a 90-point interval and a dark
+                feed is a different proposition from a BBB that is fully reported. */}
+            {latest && (
+              <div className="metrics">
+                <span title="confidence interval half-width">
+                  ±{Math.round((latest.confidence_interval[1] - latest.confidence_interval[0]) / 2)}
+                </span>
+                <span className="m-sep">·</span>
+                <span title="data quality score">dq {latest.data_quality_score.toFixed(2)}</span>
+                <span className="m-sep">·</span>
+                <span
+                  className={`att ${latest.attestation?.verified ? '' : 'no'}`}
+                  title={
+                    latest.attestation?.verified
+                      ? 'reasoning attested by a verified 0G Compute TEE signature'
+                      : 'no verified attestation on this score'
+                  }
+                >
+                  {latest.attestation?.verified ? 'attested' : 'unattested'}
+                </span>
+                {latest.staleness_silent && (
+                  <>
+                    <span className="m-sep">·</span>
+                    <span className="silent" title="a weighted feed is past its reporting grace">
+                      silent
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
           </button>
         )
       })}
