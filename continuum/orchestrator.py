@@ -334,20 +334,41 @@ def daily(
         print("-" * 118)
 
     results: list[aggregate.ScoreResult] = []
+    failures: list[tuple[str, str]] = []
+
     for b in borrowers:
         bid = b["borrower_id"]
         cutoff = as_of + timedelta(minutes=jitter_minutes(bid, as_of))
         documents = store.load_documents(bid)
-        result, _ = rescore(
-            b,
-            raw,
-            cutoff,
-            model=model,
-            documents=documents,
-            trigger_reason="scheduled_daily",
-            fresh_llm=fresh_llm,
-            persist=persist,
-        )
+
+        # One borrower's failure must not stop the cohort.
+        #
+        # The scheduled path is the baseline every other borrower's score depends on being current,
+        # and it used to abort on the first exception — so a single borrower with no documents on
+        # the mainnet reasoning path (which raises rather than degrading) left the other eleven
+        # unscored, silently, behind a traceback. A daily run that stops a quarter of the way
+        # through is worse than one that reports a gap, because the gap is invisible.
+        #
+        # Failures are collected and reported at the end rather than swallowed: the run continues,
+        # and the exit status still reflects that something did not score.
+        try:
+            result, _ = rescore(
+                b,
+                raw,
+                cutoff,
+                model=model,
+                documents=documents,
+                trigger_reason="scheduled_daily",
+                fresh_llm=fresh_llm,
+                persist=persist,
+            )
+        except Exception as exc:
+            failures.append((bid, f"{type(exc).__name__}: {exc}"))
+            if verbose:
+                print(f"{bid:<16}{'—':>6}{'—':>7}{'':>13}{'':>7}{'':>6}{'—':>5}  "
+                      f"FAILED: {str(exc)[:60]}")
+            continue
+
         results.append(result)
 
         if verbose:
